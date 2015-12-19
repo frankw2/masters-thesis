@@ -6,245 +6,252 @@
 %% prompt when you run the file main.tex through LaTeX.
 \chapter{Introduction}
 
-Micro-optimization is a technique to reduce the overall operation count of
-floating point operations.  In a standard floating point unit, floating
-point operations are fairly high level, such as ``multiply'' and ``add'';
-in a micro floating point unit ($\mu$FPU), these have been broken down into
-their constituent low-level floating point operations on the mantissas and
-exponents of the floating point numbers.
+In today's web, a single person often 
+uses multiple web services. 
+Conceptually, the user has a single
+logical data set, and she selectively
+exposes a portion of that data to each
+web service. In practice, the services
+control her data: each service keeps its
+portion of the user's objects in a walled
+garden which neither the user nor external
+services can directly access.
 
-Chapter two describes the architecture of the $\mu$FPU unit, and the
-motivations for the design decisions made.
+These service-controlled data silos force
+users to relinquish low-level authority over
+data storage. As a result, users cede the
+ultimate power to set access controls and
+limit how their data is shared. Furthermore, simple
+operations like enumerating all of a user's
+cloud data become difficult, since a user's
+state is scattered across a variety of services
+which hide raw storage via high-level, curated
+APIs.
 
-Chapter three describes the design of the compiler, as well as how the
-optimizations discussed in section~\ref{ch1:opts} were implemented.
+Data silos are not only problematic for
+users but also problematic for
+\emph{applications} whose value often scales
+with the amount of user data that can be
+accessed by the application. For example,
+quantified self applications~\cite{beam},
+which track a user's health and personal
+productivity, work best when given data
+from a variety of sensors and environmental
+locations. Similarly, applications which analyze a
+user's medical records~\cite{lark} or financial
+transactions~\cite{mint} produce the best
+results when they have access to 
+all of the user's medical or financial data.
+Unfortunately, modern web services use
+a siloed design that limits a user's ability to share 
+data outside of the service-specific silo. 
+For example, wearable
+fitness-tracking sensors typically upload data
+to vendor-specific cloud storage, and medical
+records are often bound to storage that belongs
+to the medical specialist who measured the
+data. Thus, having a user-centric storage model
+is beneficial for \emph{both} the user and the application.
 
-Chapter four describes the purpose of test code that was compiled, and which
-statistics were gathered by running it through the simulator.  The purpose
-is to measure what effect the micro-optimizations had, compared to
-unoptimized code.  Possible future expansions to the project are also
-discussed.
+\section{The Challenges of Centralized Data}
 
-\section{Motivations for micro-optimization}
+In a user-centric storage model, a user's
+entire data set would reside in a single,
+logically centralized cloud store; the user
+would selectively disclose portions of that
+data to individual third party applications.
+Systems like Amber~\cite{amber} and BStore~\cite{bstore}
+have demonstrated the benefits of 
+decoupling applications and user
+data, but a centralized data storage
+increases the damage that results from a
+subverted or curious storage provider because
+\emph{all} of a user's cleartext data is at
+risk, instead of a service-specific subset.
 
-The idea of micro-optimization is motivated by the recent trends in computer
-architecture towards low-level parallelism and small, pipelineable
-instruction sets \cite{patterson:risc,rad83}.  By getting rid of more
-complex instructions and concentrating on optimizing frequently used
-instructions, substantial increases in performance were realized.
+To protect against untrusted storage providers,
+users can encrypt data before uploading it.
+However, the ultimate purpose of uploading
+data is to share it with third party services.
+Thus, users need a way to selectively expose
+pointers to encrypted objects (and the associated
+decryption keys). Protocols exist for sharing
+cloud data across multiple services, but these
+protocols have major usability and security
+problems. For example, the popular OAuth
+protocol~\cite{oauth} enables cross-site data
+sharing via delegated API calls (i.e., API
+calls that act with the authority of a user).
+However, OAuth policies are invariably defined
+by web services, not by users. Furthermore,
+OAuth does not enforce cryptographically strong
+constraints on the data that the delegated
+APIs can access. Thus, even if a user could
+generate her own OAuth policies, she would
+lack strong assurances about what those policies
+mean, and how they are enforced.
 
-Another important motivation was the trend towards placing more of the
-burden of performance on the compiler.  Many of the new architectures depend
-on an intelligent, optimizing compiler in order to realize anywhere near
-their peak performance
-\cite{ellis:bulldog,pet87,coutant:precision-compilers}.  In these cases, the
-compiler not only is responsible for faithfully generating native code to
-match the source language, but also must be aware of instruction latencies,
-delayed branches, pipeline stages, and a multitude of other factors in order
-to generate fast code \cite{gib86}.
+Given the discussion above, logically centralized
+storage seems good for users in theory, but
+difficult to implement in practice. In this
+paper, we address three specific challenges
+that emerge from a logically centralized storage
+architecture. The first is \emph{security}: how
+do we make access controls cryptographically
+strong, and protect user data against the
+compromise of storage providers and user devices?
+The second challenge is \emph{usability}: how
+can we express access policies in a way that
+lay-person users will understand, but is
+translatable to cryptographically enforceable
+mechanisms? The final challenge is \emph{application
+richness}: after we have moved user data out
+of per-application silos and into user-controlled
+storage, how can we support the complex 
+applications that users currently enjoy?
 
-Taking these ideas one step further, it seems that the floating point
-operations that are normally single, large instructions can be further broken
-down into smaller, simpler, faster instructions, with more control in the
-compiler and less in the hardware.  This is the idea behind a
-micro-optimizing FPU; break the floating point instructions down into their
-basic components and use a small, fast implementation, with a large part of
-the burden of hardware allocation and optimization shifted towards
-compile-time.
+\begin{figure}
+  \centering
+     \includegraphics{figs/arch.pdf}
+     \caption[Sieve's high-level architecture]
+     {Sieve's high-level architecture. 1) The user uploads
+              ABE-encrypted data to a storage provider. 2) The user
+              generates a data policy for a third party web
+              service. Sieve translates the policy into an ABE
+              decryption key, and sends the key to the web service.
+              3) The web service pulls encrypted data from the
+              storage provider, decrypts it locally, and injects
+              the data into the unmodified application pipeline.}
+  \label{fig:sieve}
+\end{figure}
 
-Along with the hardware speedups possible by using a $\mu$FPU, there are
-also optimizations that the compiler can perform on the code that is
-generated.  In a normal sequence of floating point operations, there are
-many hidden redundancies that can be eliminated by allowing the compiler to
-control the floating point operations down to their lowest level.  These
-optimizations are described in detail in section~\ref{ch1:opts}.
+\section{Our Solution}
 
-\section{Description of micro-optimization}\label{ch1:opts}
+To address these challenges, we propose Sieve,
+a new system for delegating access to
+private cloud data. Figure~\ref{fig:sieve} depicts
+Sieve's high-level workflow. A user generates
+raw data on her computational devices, and
+uploads encrypted versions of it to a single cloud
+repository; the user manages and pays for the 
+cloud, not the web services which
+desire access to the data. When a third party web service
+requests access, e.g., during the first
+time that a user visits a site, the user
+generates a high-level access policy (\S\ref{sec:policies})
+for the service. Sieve splits the policy into
+two pieces: the storage provider learns which
+objects a third party can access (but not the
+cleartext versions of those objects), and the
+third party learns the objects that it can
+access, and the corresponding decryption keys,
+while learning nothing about the rest of the
+user's data set. Once the third party has
+downloaded the necessary objects and decrypted
+them, it feeds the cleartext data to a legacy
+pipeline for processing user content (\S\ref{sec:attrGen}).
 
-In order to perform a sequence of floating point operations, a normal FPU
-performs many redundant internal shifts and normalizations in the process of
-performing a sequence of operations.  However, if a compiler can
-decompose the floating point operations it needs down to the lowest level,
-it then can optimize away many of these redundant operations.  
+\begin{figure}
+\centering
+\begin{verbatim}
+              (type="Fitness" OR type="Medical") AND (date > 2012) 
+                              AND (source="FitBit") 
+\end{verbatim}
+\caption[Example Sieve policy]{Example Sieve policy for an exercise application.}
+\label{fig:policyex}
+\end{figure}
 
-If there is some additional hardware support specifically for
-micro-optimization, there are additional optimizations that can be
-performed.  This hardware support entails extra ``guard bits'' on the
-standard floating point formats, to allow several unnormalized operations to
-be performed in a row without the loss information\footnote{A description of
-the floating point format used is shown in figures~\ref{exponent-format}
-and~\ref{mantissa-format}.}.  A discussion of the mathematics behind
-unnormalized arithmetic is in appendix~\ref{unnorm-math}.
+Sieve leverages three techniques to implement
+the workflow in Figure~\ref{fig:sieve}:\\
+\begin{smitemize}
+  \item Sieve uses \textbf{attribute-based encryption}
+  (ABE)~\cite{kpabe} to implement cryptographically strong access
+  policies. In ABE, encrypted data is 
+  associated with attributes, which are key-value 
+  pairs like ``date=2012", and decryption keys are 
+  associated with policies; a key can only
+  decrypt ciphertexts whose attributes satisfy a key's
+  policy. Before the user uploads
+  objects to the storage provider, she (or her local
+  device) tags the objects with attributes like the
+  date, the user's current location, or the object type
+  (e.g., ``medical'', ``financial'', ``fitness").
+  The uploading device transparently encrypts the objects
+  with the relevant attributes before sending the objects to
+  the storage provider. Later, when a third party web service 
+  requests access to the user's data, the user creates a policy
+  defined in terms of attributes and attribute
+  operators like equality and less than. Figure~\ref{fig:policyex}
+  shows an example of such a policy, which a user
+  might give an application that visualizes her exercise data.
+  The user's local device automatically translates the
+  policy into an ABE decryption key, and sends the key
+  to the web service. Afterwards, the web service can use
+  the key to read the cleartext versions of the delegated
+  objects from the storage provider and does not require
+  any more communication with the user.
+  
+  \item To revoke a third party's access to sensitive data,
+  the user informs the storage provider that the third
+  party should no longer be able to download encrypted
+  user objects. However, the third party still possesses
+  the associated decryption key, and can decrypt leaked
+  ciphertext if the storage server is later compromised.
+  To prevent this scenario, Sieve uses \textbf{key
+  homomorphism}~\cite{keyhom} to implement key revocation. Key
+  homomorphism allows the storage provider
+  to re-encrypt user data without learning the underlying
+  cleartext--the storage provider merely reads the
+  ciphertext and writes the output of a function that
+  accepts the ciphertext and a user-specified rekeying
+  token as input. The execution of this function on the storage 
+  provider also does not reveal any information about the 
+  cleartext data. Using \textit{in situ} re-encryption,
+  users can avoid re-encrypting data on user devices and
+  then re-uploading it. Additionally, if storage providers
+  are honest at the time of key revocation, subsequent
+  storage provider compromises will not reveal data that
+  is encrypted with keys that are revoked (but possibly
+  still in the wild). To our knowledge, Sieve is the first 
+  ABE-based system to support full re-keying of \textit{both}
+  the metadata and data.
 
-The optimizations that the compiler can perform fall into several categories:
+  \item ABE uses a \emph{master secret key} to generate
+  decryption keys. The loss of this key results
+  in the compromise of the entire cryptosystem. In
+  standard ABE schemes, the master secret is kept by a
+  single trusted authority. In the context of Sieve,
+  this would mean keeping the master secret on a single
+  user device. This is unattractive, since user devices
+  are often lost or stolen. Thus, Sieve
+  uses \textbf{secret-sharing} and \textbf{two-factor
+  authentication} to partition the master secret across
+  multiple devices, and prevent unauthorized devices
+  from arbitrarily participating in Sieve's cryptographic
+  protocols.
+    
+\end{smitemize}
 
-\subsection{Post Multiply Normalization}
+Sieve represents a middle ground between today's
+popular web services (which provide weak user
+control over the distribution and access of her data), 
+and proposed systems from the
+research community which strengthen user control,
+but greatly restrict server-side computation~\cite{mylar}
+or eliminate it altogether~\cite{sundr,depot,sporc,bstore,depSky}.
+Sieve explores a
+different point in the design space, one that
+provides cryptographically strong access controls
+to users while still permitting the rich
+server-side computation on user's sensitive data
+that many popular web
+applications require to provide increased value
+for the user.
 
-When more than two multiplications are performed in a row, the intermediate
-normalization of the results between multiplications can be eliminated.
-This is because with each multiplication, the mantissa can become
-denormalized by at most one bit.  If there are guard bits on the mantissas
-to prevent bits from ``falling off'' the end during multiplications, the
-normalization can be postponed until after a sequence of several
-multiplies\footnote{Using unnormalized numbers for math is not a new idea; a
-good example of it is the Control Data CDC 6600, designed by Seymour Cray.
-\cite{thornton:cdc6600} The CDC 6600 had all of its instructions performing
-unnormalized arithmetic, with a separate {\tt NORMALIZE} instruction.}.
-
-% This is an example of how you would use tgrind to include an example
-% of source code; it is commented out in this template since the code
-% example file does not exist.  To use it, you need to remove the '%' on the
-% beginning of the line, and insert your own information in the call.
-%
-%\tagrind[htbp]{code/pmn.s.tex}{Post Multiply Normalization}{opt:pmn}
-
-As you can see, the intermediate results can be multiplied together, with no
-need for intermediate normalizations due to the guard bit.  It is only at
-the end of the operation that the normalization must be performed, in order
-to get it into a format suitable for storing in memory\footnote{Note that
-for purposed of clarity, the pipeline delays were considered to be 0, and
-the branches were not delayed.}.
-
-\subsection{Block Exponent}
-
-In a unoptimized sequence of additions, the sequence of operations is as
-follows for each pair of numbers ($m_1$,$e_1$) and ($m_2$,$e_2$).
-\begin{enumerate}
-  \item Compare $e_1$ and $e_2$.
-  \item Shift the mantissa associated with the smaller exponent $|e_1-e_2|$
-        places to the right.
-  \item Add $m_1$ and $m_2$.
-  \item Find the first one in the resulting mantissa.
-  \item Shift the resulting mantissa so that normalized
-  \item Adjust the exponent accordingly.
-\end{enumerate}
-
-Out of 6 steps, only one is the actual addition, and the rest are involved
-in aligning the mantissas prior to the add, and then normalizing the result
-afterward.  In the block exponent optimization, the largest mantissa is
-found to start with, and all the mantissa's shifted before any additions
-take place.  Once the mantissas have been shifted, the additions can take
-place one after another\footnote{This requires that for n consecutive
-additions, there are $\log_{2}n$ high guard bits to prevent overflow.  In
-the $\mu$FPU, there are 3 guard bits, making up to 8 consecutive additions
-possible.}.  An example of the Block Exponent optimization on the expression
-X = A + B + C is given in figure~\ref{opt:be}.
-
-% This is an example of how you would use tgrind to include an example
-% of source code; it is commented out in this template since the code
-% example file does not exist.  To use it, you need to remove the '%' on the
-% beginning of the line, and insert your own information in the call.
-%
-%\tgrind[htbp]{code/be.s.tex}{Block Exponent}{opt:be}
-
-\section{Integer optimizations}
-
-As well as the floating point optimizations described above, there are
-also integer optimizations that can be used in the $\mu$FPU.  In concert
-with the floating point optimizations, these can provide a significant
-speedup.  
-
-\subsection{Conversion to fixed point}
-
-Integer operations are much faster than floating point operations; if it is
-possible to replace floating point operations with fixed point operations,
-this would provide a significant increase in speed.
-
-This conversion can either take place automatically or or based on a
-specific request from the programmer.  To do this automatically, the
-compiler must either be very smart, or play fast and loose with the accuracy
-and precision of the programmer's variables.  To be ``smart'', the computer
-must track the ranges of all the floating point variables through the
-program, and then see if there are any potential candidates for conversion
-to floating point.  This technique is discussed further in
-section~\ref{range-tracking}, where it was implemented.
-
-The other way to do this is to rely on specific hints from the programmer
-that a certain value will only assume a specific range, and that only a
-specific precision is desired.  This is somewhat more taxing on the
-programmer, in that he has to know the ranges that his values will take at
-declaration time (something normally abstracted away), but it does provide
-the opportunity for fine-tuning already working code.
-
-Potential applications of this would be simulation programs, where the
-variable represents some physical quantity; the constraints of the physical
-system may provide bounds on the range the variable can take.
-\subsection{Small Constant Multiplications}
-
-One other class of optimizations that can be done is to replace
-multiplications by small integer constants into some combination of
-additions and shifts.  Addition and shifting can be significantly faster
-than multiplication.  This is done by using some combination of
-\begin{eqnarray*}
-a_i & = & a_j + a_k \\
-a_i & = & 2a_j + a_k \\
-a_i & = & 4a_j + a_k \\
-a_i & = & 8a_j + a_k \\
-a_i & = & a_j - a_k \\
-a_i & = & a_j \ll m \mbox{shift}
-\end{eqnarray*}
-instead of the multiplication.  For example, to multiply $s$ by 10 and store
-the result in $r$, you could use:
-\begin{eqnarray*}
-r & = & 4s + s\\
-r & = & r + r
-\end{eqnarray*}
-Or by 59:
-\begin{eqnarray*}
-t & = & 2s + s \\
-r & = & 2t + s \\
-r & = & 8r + t
-\end{eqnarray*}
-Similar combinations can be found for almost all of the smaller
-integers\footnote{This optimization is only an ``optimization'', of course,
-when the amount of time spent on the shifts and adds is less than the time
-that would be spent doing the multiplication.  Since the time costs of these
-operations are known to the compiler in order for it to do scheduling, it is
-easy for the compiler to determine when this optimization is worth using.}.
-\cite{magenheimer:precision}
-
-\section{Other optimizations}
-
-\subsection{Low-level parallelism}
-
-The current trend is towards duplicating hardware at the lowest level to
-provide parallelism\footnote{This can been seen in the i860; floating point
-additions and multiplications can proceed at the same time, and the RISC
-core be moving data in and out of the floating point registers and providing
-flow control at the same time the floating point units are active. \cite{byte:i860}}
-
-Conceptually, it is easy to take advantage to low-level parallelism in the
-instruction stream by simply adding more functional units to the $\mu$FPU,
-widening the instruction word to control them, and then scheduling as many
-operations to take place at one time as possible.
-
-However, simply adding more functional units can only be done so many times;
-there is only a limited amount of parallelism directly available in the
-instruction stream, and without it, much of the extra resources will go to
-waste.  One process used to make more instructions potentially schedulable
-at any given time is ``trace scheduling''.  This technique originated in the
-Bulldog compiler for the original VLIW machine, the ELI-512.
-\cite{ellis:bulldog,colwell:vliw}  In trace scheduling, code can be
-scheduled through many basic blocks at one time, following a single
-potential ``trace'' of program execution.  In this way, instructions that
-{\em might\/} be executed depending on a conditional branch further down in
-the instruction stream are scheduled, allowing an increase in the potential
-parallelism.  To account for the cases where the expected branch wasn't
-taken, correction code is inserted after the branches to undo the effects of
-any prematurely executed instructions.
-
-\subsection{Pipeline optimizations}
-
-In addition to having operations going on in parallel across functional
-units, it is also typical to have several operations in various stages of
-completion in each unit.  This pipelining allows the throughput of the
-functional units to be increased, with no increase in latency.
-
-There are several ways pipelined operations can be optimized.  On the
-hardware side, support can be added to allow data to be recirculated back
-into the beginning of the pipeline from the end, saving a trip through the
-registers.  On the software side, the compiler can utilize several tricks to
-try to fill up as many of the pipeline delay slots as possible, as
-seendescribed by Gibbons. \cite{gib86}
-
-
+To demonstrate its practicality, we integrated Sieve with
+an existing health application, Open mHealth~\cite{omh},
+an open-source application that 
+helps users store and visualize their data. We obtained
+realistic user health data based on existing clinical standards
+from Open mHealth and used Sieve 
+to manage the user data (\S\ref{sec:integration}).

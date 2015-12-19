@@ -32,6 +32,32 @@
 \usepackage{cmap}
 \usepackage[T1]{fontenc}
 \pagestyle{plain}
+\usepackage[hyphens]{url}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{subfig}
+
+%% better typesetting
+\usepackage[breaklinks, pdfborder={0 0 0}]{hyperref}
+\usepackage[square,comma,numbers,sort&compress]{natbib}
+\usepackage{booktabs}     %% better tables
+\usepackage[T1]{fontenc}  %% better underscore
+\usepackage{microtype}    %% better letter and word spacing
+\usepackage{mathptmx}     %% times in math
+%\renewcommand{\ttdefault}{pxtt}   %% better \tt font
+%% Ensure ligatures (e.g., ``fine official flag'') can be copy/pasted from PDF.
+%\input{glyphtounicode}
+%\pdfgentounicode=1
+
+
+
+\newenvironment{smitemize}%
+  {\begin{list}{$\bullet$}%
+     {\setlength{\parsep}{0pt}%
+      \setlength{\topsep}{0pt}%
+      \setlength{\itemsep}{0pt}}}%
+  {\end{list}}
+  
 
 %% This bit allows you to either specify only the files which you wish to
 %% process, or `all' to process all files which you \include.

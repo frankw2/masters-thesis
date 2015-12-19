@@ -3,354 +3,746 @@
 	# "\newcommand{\singleletter}[1]{#1} "
 	# "\newcommand{\switchargs}[2]{#2#1} " }
 
-@ARTICLE{article-minimal,
-   author = {L[eslie] A. Aamport},
-   title = {The Gnats and Gnus Document Preparation System},
-   journal = {\mbox{G-Animal's} Journal},
-   year = 1986,
+@Misc{firefoxStrings,
+  author = {J. de Mooij},
+  title = {{Slimmer and faster JavaScript strings in Firefox}},
+  month = {July 21},
+  year = {2014},
+  note = {\url{https://blog.mozilla.org/javascript/2014/07/21/slimmer-and-faster-javascript-strings-in-firefox/}}
 }
 
-@ARTICLE{article-full,
-   author = {L[eslie] A. Aamport},
-   title = {The Gnats and Gnus Document Preparation System},
-   journal = {\mbox{G-Animal's} Journal},
-   year = 1986,
-   volume = 41,
-   number = 7,
-   pages = "73+",
-   month = jul,
-   note = "This is a full ARTICLE entry",
+@Misc{instagram,
+  author={Facebook},
+  title={Instagram},
+  note={\url{http://www.instagram.com}}
 }
 
-The KEY field is here to override the KEY field in the journal being
-cross referenced (so is the NOTE field, in addition to its imparting
-information).
-
-@ARTICLE{article-crossref,
-   crossref = {WHOLE-JOURNAL},
-   key = "",
-   author = {L[eslie] A. Aamport},
-   title = {The Gnats and Gnus Document Preparation System},
-   pages = "73+",
-   note = "This is a cross-referencing ARTICLE entry",
+@Misc{soverflow,
+  author={Stack Overflow},
+  title={Stack Overflow},
+  note={\url{http://www.stackoverflow.com}}
 }
 
-@ARTICLE{whole-journal,
-   key = "GAJ",
-   journal = {\mbox{G-Animal's} Journal},
-   year = 1986,
-   volume = 41,
-   number = 7,
-   month = jul,
-   note = {The entire issue is devoted to gnats and gnus
-		(this entry is a cross-referenced ARTICLE (journal))},
+@Misc{github,
+  author={GitHub},
+  title={GitHub},
+  note={\url{https://www.github.com}}
 }
 
-@INBOOK{inbook-minimal,
-   author = "Donald E. Knuth",
-   title = "Fundamental Algorithms",
-   publisher = "Addison-Wesley",
-   year = "{\noopsort{1973b}}1973",
-   chapter = "1.2",
+@Misc{reddit,
+  author={Reddit},
+  title={Reddit},
+  note={\url{https://www.reddit.com}}
 }
 
-@INBOOK{inbook-full,
-   author = "Donald E. Knuth",
-   title = "Fundamental Algorithms",
-   volume = 1,
-   series = "The Art of Computer Programming",
-   publisher = "Addison-Wesley",
-   address = "Reading, Massachusetts",
-   edition = "Second",
-   month = "10~" # jan,
-   year = "{\noopsort{1973b}}1973",
-   type = "Section",
-   chapter = "1.2",
-   pages = "10--119",
-   note = "This is a full INBOOK entry",
+@Misc{berkdb,
+  author={Oracle},
+  title={BerkeleyDB},
+  note={\url{http://www.oracle.com/technetwork/database/database-technologies/berkeleydb/overview/index.html}}
 }
 
-@INBOOK{inbook-crossref,
-   crossref = "whole-set",
-   title = "Fundamental Algorithms",
-   volume = 1,
-   series = "The Art of Computer Programming",
-   edition = "Second",
-   year = "{\noopsort{1973b}}1973",
-   type = "Section",
-   chapter = "1.2",
-   note = "This is a cross-referencing INBOOK entry",
+@Misc{mongodb,
+  author={MongoDB},
+  title={MongoDB},
+  note={\url{https://www.mongodb.org/}}
 }
 
-@BOOK{book-minimal,
-   author = "Donald E. Knuth",
-   title = "Seminumerical Algorithms",
-   publisher = "Addison-Wesley",
-   year = "{\noopsort{1973c}}1981",
+@Misc{AmazonPUT, 
+  author = {Amazon},
+  title = {PUT Object},
+  note = {\url{http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUT.html}}
 }
 
-@BOOK{book-full,
-   author = "Donald E. Knuth",
-   title = "Seminumerical Algorithms",
-   volume = 2,
-   series = "The Art of Computer Programming",
-   publisher = "Addison-Wesley",
-   address = "Reading, Massachusetts",
-   edition = "Second",
-   month = "10~" # jan,
-   year = "{\noopsort{1973c}}1981",
-   note = "This is a full BOOK entry",
+@incollection{camenisch2001efficient,
+  title={An efficient system for non-transferable anonymous credentials with optional anonymity revocation},
+  author={Camenisch, Jan and Lysyanskaya, Anna},
+  booktitle={Advances in Cryptology -- EUROCRYPT 2001},
+  pages={93--118},
+  year={2001},
+  publisher={Springer}
 }
 
-@BOOK{book-crossref,
-   crossref = "whole-set",
-   title = "Seminumerical Algorithms",
-   volume = 2,
-   series = "The Art of Computer Programming",
-   edition = "Second",
-   year = "{\noopsort{1973c}}1981",
-   note = "This is a cross-referencing BOOK entry",
+@article{shamir,
+  title={How to share a secret},
+  author={Shamir, Adi},
+  journal={Communications of the ACM},
+  volume={22},
+  number={11},
+  pages={612--613},
+  year={1979},
+  publisher={ACM}
 }
 
-@BOOK{whole-set,
-   author = "Donald E. Knuth",
-   publisher = "Addison-Wesley",
-   title = "The Art of Computer Programming",
-   series = "Four volumes",
-   year = "{\noopsort{1973a}}{\switchargs{--90}{1968}}",
-   note = "Seven volumes planned (this is a cross-referenced set of BOOKs)",
+@incollection{dwork2011differential,
+  title={Differential privacy},
+  author={Dwork, Cynthia},
+  booktitle={Encyclopedia of Cryptography and Security},
+  pages={338--340},
+  year={2011},
+  publisher={Springer}
 }
 
-@BOOKLET{booklet-minimal,
-   key = "Kn{\printfirst{v}{1987}}",
-   title = "The Programming of Computer Art",
+@techreport{tor,
+  title={Tor: The second-generation onion router},
+  author={Dingledine, Roger and Mathewson, Nick and Syverson, Paul},
+  year={2004},
+  institution={DTIC Document}
 }
 
-@BOOKLET{booklet-full,
-   author = "Jill C. Knvth",
-   title = "The Programming of Computer Art",
-   howpublished = "Vernier Art Center",
-   address = "Stanford, California",
-   month = feb,
-   year = 1988,
-   note = "This is a full BOOKLET entry",
+@article{lindell2009proof,
+  title={A proof of security of Yao’s protocol for two-party computation},
+  author={Lindell, Yehuda and Pinkas, Benny},
+  journal={Journal of Cryptology},
+  volume={22},
+  number={2},
+  pages={161--188},
+  year={2009},
+  publisher={Springer}
 }
 
-@INCOLLECTION{incollection-minimal,
-   author = "Daniel D. Lincoll",
-   title = "Semigroups of Recurrences",
-   booktitle = "High Speed Computer and Algorithm Organization",
-   publisher = "Academic Press",
-   year = 1977,
+@incollection{boneh2011functional,
+  title={Functional encryption: Definitions and challenges},
+  author={Boneh, Dan and Sahai, Amit and Waters, Brent},
+  booktitle={Theory of Cryptography},
+  pages={253--273},
+  year={2011},
+  publisher={Springer}
 }
 
-@INCOLLECTION{incollection-full,
-   author = "Daniel D. Lincoll",
-   title = "Semigroups of Recurrences",
-   editor = "David J. Lipcoll and D. H. Lawrie and A. H. Sameh",
-   booktitle = "High Speed Computer and Algorithm Organization",
-   number = 23,
-   series = "Fast Computers",
-   chapter = 3,
-   type = "Part",
-   pages = "179--183",
-   publisher = "Academic Press",
-   address = "New York",
-   edition = "Third",
-   month = sep,
-   year = 1977,
-   note = "This is a full INCOLLECTION entry",
+@article{maintaindataware,
+  title={Maintaining data warehouses over changing information sources},
+  author={Rundensteiner, Elke A and Koeller, Andreas and Zhang, Xin},
+  journal={Communications of the ACM},
+  volume={43},
+  number={6},
+  pages={57--62},
+  year={2000},
+  publisher={ACM}
 }
 
-@INCOLLECTION{incollection-crossref,
-   crossref = "whole-collection",
-   author = "Daniel D. Lincoll",
-   title = "Semigroups of Recurrences",
-   pages = "179--183",
-   note = "This is a cross-referencing INCOLLECTION entry",
+@inproceedings{justGarble,
+  title={Efficient garbling from a fixed-key blockcipher},
+  author={Bellare, Mihir and Hoang, Viet Tung and Keelveedhi, Sriram and Rogaway, Phillip},
+  booktitle={Security and Privacy (SP), 2013 IEEE Symposium on},
+  pages={478--492},
+  year={2013},
+  organization={IEEE}
 }
 
-@BOOK{whole-collection,
-   editor = "David J. Lipcoll and D. H. Lawrie and A. H. Sameh",
-   title = "High Speed Computer and Algorithm Organization",
-   booktitle = "High Speed Computer and Algorithm Organization",
-   number = 23,
-   series = "Fast Computers",
-   publisher = "Academic Press",
-   address = "New York",
-   edition = "Third",
-   month = sep,
-   year = 1977,
-   note = "This is a cross-referenced BOOK (collection) entry",
+@inproceedings{ctrmode,
+  title={CTR-mode encryption},
+  author={Lipmaa, Helger and Rogaway, Phillip and Wagner, David},
+  booktitle={First NIST Workshop on Modes of Operation},
+  year={2000},
+  organization={Citeseer}
 }
 
-@MANUAL{manual-minimal,
-   key = "Manmaker",
-   title = "The Definitive Computer Manual",
+@inproceedings{twofactor,
+  title={Two factor authentication using mobile phones},
+  author={Aloul, Fadi and Zahidi, Syed and El-Hajj, Wassim},
+  booktitle={Computer Systems and Applications, 2009. AICCSA 2009. IEEE/ACS International Conference on},
+  pages={641--644},
+  year={2009},
+  organization={IEEE}
 }
 
-@MANUAL{manual-full,
-   author = "Larry Manmaker",
-   title = "The Definitive Computer Manual",
-   organization = "Chips-R-Us",
-   address = "Silicon Valley",
-   edition = "Silver",
-   month = apr # "-" # may,
-   year = 1986,
-   note = "This is a full MANUAL entry",
+@inproceedings{gaw2006password,
+  title={Password management strategies for online accounts},
+  author={Gaw, Shirley and Felten, Edward W},
+  booktitle={Proceedings of the second symposium on Usable privacy and security},
+  pages={44--55},
+  year={2006},
+  organization={ACM}
 }
 
-@MASTERSTHESIS{mastersthesis-minimal,
-   author = "{\'{E}}douard Masterly",
-   title = "Mastering Thesis Writing",
-   school = "Stanford University",
-   year = 1988,
+@article{pbkdf,
+  title={Recommendation for password-based key derivation},
+  author={Turan, Meltem S{\"o}nmez and Barker, Elaine and Burr, William and Chen, Lily},
+  journal={NIST special publication},
+  volume={800},
+  pages={132},
+  year={2010}
 }
 
-@MASTERSTHESIS{mastersthesis-full,
-   author = "{\'{E}}douard Masterly",
-   title = "Mastering Thesis Writing",
-   school = "Stanford University",
-   type = "Master's project",
-   address = "English Department",
-   month = jun # "-" # aug,
-   year = 1988,
-   note = "This is a full MASTERSTHESIS entry",
+@article{wang2012smartphone,
+  title={Smartphone security challenges},
+  author={Wang, Yong and Streff, Kevin and Raman, Sonell},
+  journal={Computer},
+  number={12},
+  pages={52--58},
+  year={2012},
+  publisher={IEEE}
 }
 
-@MISC{misc-minimal,
-   key = "Missilany",
-   note = "This is a minimal MISC entry",
+@inproceedings{onthefly,
+  title={Improving cloud availability with on-the-fly schema updates},
+  author={Neamtiu, Iulian and Bardin, Jonathan and Uddin, Md Reaz and Lin, Dien-Yen and Bhattacharya, Pamela},
+  booktitle={Proceedings of the 19th International Conference on Management of Data},
+  pages={24--34},
+  year={2013},
+  organization={Computer Society of India}
 }
 
-@MISC{misc-full,
-   author = "Joe-Bob Missilany",
-   title = "Handing out random pamphlets in airports",
-   howpublished = "Handed out at O'Hare",
-   month = oct,
-   year = 1984,
-   note = "This is a full MISC entry",
+@article{f1,
+  title={Online, asynchronous schema change in F1},
+  author={Rae, Ian and Rollins, Eric and Shute, Jeff and Sodhi, Sukhdeep and Vingralek, Radek},
+  journal={Proceedings of the VLDB Endowment},
+  volume={6},
+  number={11},
+  pages={1045--1056},
+  year={2013},
+  publisher={VLDB Endowment}
 }
 
-@STRING{STOC-key = "OX{\singleletter{stoc}}"}
-
-@STRING{ACM = "The OX Association for Computing Machinery"}
-
-@STRING{STOC = " Symposium on the Theory of Computing"}
-
-@INPROCEEDINGS{inproceedings-minimal,
-   author = "Alfred V. Oaho and Jeffrey D. Ullman and Mihalis Yannakakis",
-   title = "On Notions of Information Transfer in {VLSI} Circuits",
-   booktitle = "Proc. Fifteenth Annual ACM" # STOC,
-   year = 1983,
+@article{ed448,
+  title={Ed448-Goldilocks, a new elliptic curve},
+  author={Hamburg, Mike},
+  note={\url{http://eprint.iacr.org/2015/625.pdf}}
 }
 
-@INPROCEEDINGS{inproceedings-full,
-   author = "Alfred V. Oaho and Jeffrey D. Ullman and Mihalis Yannakakis",
-   title = "On Notions of Information Transfer in {VLSI} Circuits",
-   editor = "Wizard V. Oz and Mihalis Yannakakis",
-   booktitle = "Proc. Fifteenth Annual ACM" # STOC,
-   number = 17,
-   series = "All ACM Conferences",
-   pages = "133--139",
-   month = mar,
-   year = 1983,
-   address = "Boston",
-   organization = ACM,
-   publisher = "Academic Press",
-   note = "This is a full INPROCEDINGS entry",
+@incollection{keyhom,
+  title={Key homomorphic PRFs and their applications},
+  author={Boneh, Dan and Lewi, Kevin and Montgomery, Hart and Raghunathan, Ananth},
+  booktitle={Advances in Cryptology--CRYPTO 2013},
+  pages={410--428},
+  year={2013},
+  publisher={Springer}
 }
 
-@INPROCEEDINGS{inproceedings-crossref,
-   crossref = "whole-proceedings",
-   author = "Alfred V. Oaho and Jeffrey D. Ullman and Mihalis Yannakakis",
-   title = "On Notions of Information Transfer in {VLSI} Circuits",
-   organization = "",
-   pages = "133--139",
-   note = "This is a cross-referencing INPROCEEDINGS entry",
+@article{amber,
+  title={Amber: Decoupling User Data from Web Applications},
+  author={Chajed, Tej and Gjengset, Jon and van den Hooff, Jelle and Kaashoek, M. Frans and Mickens, James and Morris, Robert and Zeldovich, Nickolai},
+  journal={Proceedings of the 15th Workshop on Hot Topics in Operating Systems}
 }
 
-@PROCEEDINGS{proceedings-minimal,
-   key = STOC-key,
-   title = "Proc. Fifteenth Annual" # STOC,
-   year = 1983,
+@article{beam,
+  title={A Case for Ending Monolithic Apps for Connected Devices},
+  author={Singh, Rayman Preet and Shen, Chenguang and Phanishayee, Amar and Kansal, Aman and Mahajan, Ratul},
+  journal={Proceedings of the 15th Workshop on Hot Topics in Operating Systems}
 }
 
-@PROCEEDINGS{proceedings-full,
-   editor = "Wizard V. Oz and Mihalis Yannakakis",
-   title = "Proc. Fifteenth Annual" # STOC,
-   number = 17,
-   series = "All ACM Conferences",
-   month = mar,
-   year = 1983,
-   address = "Boston",
-   organization = ACM,
-   publisher = "Academic Press",
-   note = "This is a full PROCEEDINGS entry",
+@inproceedings{cloudproof,
+  title={Enabling Security in Cloud Storage SLAs with CloudProof.},
+  author={Popa, Raluca Ada and Lorch, Jacob R and Molnar, David and Wang, Helen J and Zhuang, Li},
+  booktitle={USENIX Annual Technical Conference},
+  volume={242},
+  year={2011}
 }
 
-@PROCEEDINGS{whole-proceedings,
-   key = STOC-key,
-   organization = ACM,
-   title = "Proc. Fifteenth Annual" # STOC,
-   address = "Boston",
-   year = 1983,
-   booktitle = "Proc. Fifteenth Annual ACM" # STOC,
-   note = "This is a cross-referenced PROCEEDINGS",
+@phdthesis{gentry,
+  title={A fully homomorphic encryption scheme},
+  author={Gentry, Craig},
+  year={2009},
+  school={Stanford University}
 }
 
-@PHDTHESIS{phdthesis-minimal,
-   author = "F. Phidias Phony-Baloney",
-   title = "Fighting Fire with Fire: Festooning {F}rench Phrases",
-   school = "Fanstord University",
-   year = 1988,
+@Misc{iframeSandbox,
+  title = {iframe-nested browsing context (inline frame)},
+  note = {\url{http://www.w3.org/TR/html-markup/iframe.html}},
 }
 
-@PHDTHESIS{phdthesis-full,
-   author = "F. Phidias Phony-Baloney",
-   title = "Fighting Fire with Fire: Festooning {F}rench Phrases",
-   school = "Fanstord University",
-   type = "{PhD} Dissertation",
-   address = "Department of French",
-   month = jun # "-" # aug,
-   year = 1988,
-   note = "This is a full PHDTHESIS entry",
+@inproceedings{bncurves,
+  title={Pairing-friendly elliptic curves of prime order},
+  author={Barreto, Paulo SLM and Naehrig, Michael},
+  booktitle={Selected areas in cryptography},
+  pages={319--331},
+  year={2006},
+  organization={Springer}
 }
 
-@TECHREPORT{techreport-minimal,
-   author = "Tom Terrific",
-   title = "An {$O(n \log n / \! \log\log n)$} Sorting Algorithm",
-   institution = "Fanstord University",
-   year = 1988,
+@inproceedings{npr99,
+  title={Distributed pseudo-random functions and KDCs},
+  author={Naor, Moni and Pinkas, Benny and Reingold, Omer},
+  booktitle={Advances in Cryptology—EUROCRYPT’99},
+  pages={327--346},
+  year={1999},
+  organization={Springer}
 }
 
-@TECHREPORT{techreport-full,
-   author = "Tom T{\'{e}}rrific",
-   title = "An {$O(n \log n / \! \log\log n)$} Sorting Algorithm",
-   institution = "Fanstord University",
-   type = "Wishful Research Result",
-   number = "7",
-   address = "Computer Science Department, Fanstord, California",
-   month = oct,
-   year = 1988,
-   note = "This is a full TECHREPORT entry",
+@incollection{bonehcrypto2013,
+  title={Key homomorphic PRFs and their applications},
+  author={Boneh, Dan and Lewi, Kevin and Montgomery, Hart and Raghunathan, Ananth},
+  booktitle={Advances in Cryptology--CRYPTO 2013},
+  pages={410--428},
+  year={2013},
+  publisher={Springer}
 }
 
-@UNPUBLISHED{unpublished-minimal,
-   author = "Ulrich {\"{U}}nderwood and Ned {\~N}et and Paul {\={P}}ot",
-   title = "Lower Bounds for Wishful Research Results",
-   note = "Talk at Fanstord University (this is a minimal UNPUBLISHED entry)",
+@inproceedings{privio,
+  title={Building confederated web-based services with priv. io},
+  author={Zhang, Liang and Mislove, Alan},
+  booktitle={Proceedings of the first ACM conference on Online social networks},
+  pages={189--200},
+  year={2013},
+  organization={ACM}
 }
 
-@UNPUBLISHED{unpublished-full,
-   author = "Ulrich {\"{U}}nderwood and Ned {\~N}et and Paul {\={P}}ot",
-   title = "Lower Bounds for Wishful Research Results",
-   month = nov # ", " # dec,
-   year = 1988,
-   note = "Talk at Fanstord University (this is a full UNPUBLISHED entry)",
+@inproceedings{persona,
+  title={Persona: an online social network with user-defined privacy},
+  author={Baden, Randy and Bender, Adam and Spring, Neil and Bhattacharjee, Bobby and Starin, Daniel},
+  booktitle={ACM SIGCOMM Computer Communication Review},
+  volume={39},
+  number={4},
+  pages={135--146},
+  year={2009},
+  organization={ACM}
 }
 
-@MISC{random-note-crossref,
-   key = {Volume-2},
-   note = "Volume~2 is listed under Knuth \cite{book-full}"
+@incollection{ate,
+  title={High-speed software implementation of the optimal ate pairing over Barreto--Naehrig curves},
+  author={Beuchat, Jean-Luc and Gonz{\'a}lez-D{\'\i}az, Jorge E and Mitsunari, Shigeo and Okamoto, Eiji and Rodr{\'\i}guez-Henr{\'\i}quez, Francisco and Teruya, Tadanori},
+  booktitle={Pairing-Based Cryptography-Pairing 2010},
+  pages={21--39},
+  year={2010},
+  publisher={Springer}
+}
+
+@techreport{cookies,
+  title={HTTP State Management Mechanism},
+  author={A. Barth},
+  year = {2011},
+  institution= {RFC 6265, Aprill}
+}
+
+@misc{libfenc,
+  title={libfenc: The Functional Encryption Library},
+  author={Green, Matthew and Akinyele, Ayo and Rushanan, Michael},
+  note = {\url{https://code.google.com/p/libfenc/}}
+}
+
+@misc{privly,
+ title = {Share Priv(ate).ly},
+ note = {\url{https://priv.ly}}
+}
+
+@article{mnt224,
+  title={New explicit conditions of elliptic curve traces for FR-reduction},
+  author={Miyaji, Atsuko and Nakabayashi, Masaki and Takano, Shunzou},
+  journal={IEICE transactions on fundamentals of electronics, communications and computer sciences},
+  volume={84},
+  number={5},
+  pages={1234--1243},
+  year={2001},
+  publisher={The Institute of Electronics, Information and Communication Engineers}
+}
+
+@phdthesis{pbc,
+  title={On the implementation of pairing-based cryptosystems},
+  author={Ben Lynn},
+  year={2007},
+  school={Stanford University}
+}
+
+@inproceedings{shadowcrypt,
+  title={{ShadowCrypt: Encrypted Web Applications for Everyone}},
+  author={He, Warren and Akhawe, Devdatta and Jain, Sumeet and Shi, Elaine and Song, Dawn},
+  booktitle={Proceedings of the 2014 ACM SIGSAC Conference on Computer and Communications Security},
+  pages={1028--1039},
+  year={2014},
+  organization={ACM}
+}
+
+@inproceedings{wprof,
+  title={{Demystifying Page Load Performance with WProf}},
+  author={Wang, Xiao Sophia and Balasubramanian, Aruna and Krishnamurthy, Arvind and Wetherall, David},
+  booktitle={Proceedings of NSDI},
+  pages={473--485},
+  year={2013},
+}
+
+@inproceedings{bobtail,
+  title={{Bobtail: Avoiding Long Tails in the Cloud}},
+  author={Xu, Yunjing and Musgrave, Zachary and Noble, Brian and Bailey, Michael},
+  booktitle={Proceedings of NSDI},
+  pages={329--341},
+  year={2013},
+}
+
+@inproceedings{GORAM,
+  title={{Privacy and Access Control for Outsourced Personal Records}},
+  author={Maffei, Matteo and Malavolta, Giulio and Reinert, Manuel and Schr{\"o}der, Dominique},
+  booktitle={Proceedings of IEEE Symposium on Security and Privacy},
+  year={2015},
+}
+
+@inproceedings{aauth,
+  title={Oauth and abe based authorization in semi-trusted cloud computing: aauth},
+  author={Tassanaviboon, Anuchart and Gong, Guang},
+  booktitle={Proceedings of the second international workshop on Data intensive computing in the clouds},
+  pages={41--50},
+  year={2011},
+  organization={ACM}
+}
+
+@inproceedings{roesner2012,
+  title={User-driven access control: Rethinking permission granting in modern operating systems},
+  author={Roesner, Franziska and Kohno, Tadayoshi and Moshchuk, Alexander and Parno, Bryan and Wang, Helen J and Cowan, Crispin},
+  booktitle={Security and privacy (SP), 2012 IEEE Symposium on},
+  pages={224--238},
+  year={2012},
+  organization={IEEE}
+}
+
+@inproceedings{adnostic,
+  title={Adnostic: Privacy Preserving Targeted Advertising.},
+  author={Toubiana, Vincent and Narayanan, Arvind and Boneh, Dan and Nissenbaum, Helen and Barocas, Solon},
+  booktitle={NDSS},
+  year={2010}
+}
+
+@Misc{nss,
+  author={Mozilla},
+  title={Network Security Services},
+  note={\url{https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS}}
+}
+
+@Misc{boringssl,
+  author={Google},
+  title={BoringSSL},
+  note={\url{https://boringssl.googlesource.com/boringssl/}}
+}
+
+@Misc {oauthbugs2,
+ author={Egor Homakov},
+ title= {{How we hacked Facebook with OAuth2 and Chrome bugs}},
+ month = {February},
+ year = {2013},
+ note = {\url{http://homakov.blogspot.com/2013/02/hacking-facebook-with-oauth2-and-chrome.html}}
+}
+
+@article{graphsfs,
+  title={Extracting summary sentences based on the document semantic graph},
+  author={Leskovec, Jure and Milic-Frayling, Natasa and Grobelnik, Marko and Leskovec, J},
+  journal={Microsoft Research, Microsoft Corporation},
+  year={2005}
+}
+
+@Misc {pricingwars,
+  author = {Quentin Fottrell},
+  title = {{Microsoft takes latest shot in cloud price war}},
+  note = {\url{http://www.marketwatch.com/story/microsoft-takes-latest-shot-in-cloud-price-war-2014-10-27}}
+}
+
+@article{contextsfs,
+  title={Toward automatic context-based attribute assignment for semantic file systems},
+  author={Soules, Craig AN and Ganger, Gregory R},
+  journal={Parallel data laboratory, Carnegie Mellon University},
+  year={2004}
+}
+
+@inproceedings{sfs,
+  title={Semantic file systems},
+  author={Gifford, David K and Jouvelot, Pierre and Sheldon, Mark A and others},
+  booktitle={ACM SIGOPS Operating Systems Review},
+  volume={25},
+  number={5},
+  pages={16--25},
+  year={1991},
+  organization={ACM}
+}
+
+@Misc {googledrive,
+  author = {{Google}},
+  title = {{Google Drive}},
+  note = {\url{https://drive.google.com}}
+}
+
+
+
+@Misc {dropbox,
+  author = {{Dropbox}},
+  title = {{Dropbox}},
+  note = {\url{https://dropbox.com}}
+}
+
+@Misc{lark,
+  author = {{Lark}},
+  title = {{Lark}},
+  note = {\url{http://www.web.lark.com}}
+}
+
+@Misc{omh,
+  author = {{Tides Center}},
+  title = {{Open mHealth}},
+  note = {\url{http://www.openmhealth.org/}}
+}
+
+@Misc{mint,
+  author = {{Intuit}},
+  title = {{Mint}},
+  note = {\url{http://www.mint.com}}
+}
+
+
+@Misc {angularjs,
+  author = {{Google}},
+  title = {{AngularJS}},
+  note = {\url{https://angularjs.org}}
+}
+
+@inproceedings{attestedsoftware,
+  title={Towards trusted cloud computing},
+  author={Santos, Nuno and Gummadi, Krishna P and Rodrigues, Rodrigo},
+  booktitle={Proceedings of the 2009 conference on Hot topics in cloud computing},
+  pages={3--3},
+  year={2009},
+  organization={San Diego, California}
+}
+
+@techreport{oauth,
+  title={The OAuth 2.0 Authorization Framework: Bearer Token Usage},
+  author={Jones, M and Hardt, Dick},
+  year={2012},
+  institution={RFC 6750, October}
+}
+
+@techreport{csp,
+  title={Content Security Policy Level 2},
+  author = {Mike West, Adam Barth, Dan Veditz},
+  year={2015}
+}
+
+@techreport{tls,
+  title={The Transport Layer Security (TLS) Protocol},
+  author={T. Dierks and E. Rescorla},
+  year = {2008},
+  institution = {RFC 5246, August}
+}
+
+@techreport{FOAF, 
+  title = {{FOAF Vocabulary Specification 0.99}},
+  author = {D. Brickley and L. Miller},
+  year = {2014},
+}
+
+@techreport{RDF,
+  title={{RDF 1.1 Concepts and Abstract Syntax}},
+  author = {R. Cyganiak and D. Wood and M. Lanthaler},
+  year = {2014}
+}
+
+
+@inproceedings{oauthbugs,
+  title={The devil is in the (implementation) details: an empirical analysis of oauth sso systems},
+  author={Sun, San-Tsai and Beznosov, Konstantin},
+  booktitle={Proceedings of the 2012 ACM conference on Computer and communications security},
+  pages={378--390},
+  year={2012},
+  organization={ACM}
+}
+
+@inproceedings{shroud,
+  title={Shroud: ensuring private access to large-scale data in the data center.},
+  author={Lorch, Jacob R and Parno, Bryan and Mickens, James W and Raykova, Mariana and Schiffman, Joshua},
+  booktitle={FAST},
+  volume={2013},
+  pages={199--213},
+  year={2013}
+}
+
+@article{depSky,
+  title={DepSky: dependable and secure storage in a cloud-of-clouds},
+  author={Bessani, Alysson and Correia, Miguel and Quaresma, Bruno and Andr{\'e}, Fernando and Sousa, Paulo},
+  journal={ACM Transactions on Storage (TOS)},
+  volume={9},
+  number={4},
+  pages={12},
+  year={2013},
+  publisher={ACM}
+}
+
+@incollection{shen2009,
+  title={Predicate privacy in encryption systems},
+  author={Shen, Emily and Shi, Elaine and Waters, Brent},
+  booktitle={Theory of Cryptography},
+  pages={457--473},
+  year={2009},
+  publisher={Springer}
+}
+
+@incollection{katz2008,
+  title={Predicate encryption supporting disjunctions, polynomial equations, and inner products},
+  author={Katz, Jonathan and Sahai, Amit and Waters, Brent},
+  booktitle={Advances in Cryptology--EUROCRYPT 2008},
+  pages={146--162},
+  year={2008},
+  publisher={Springer}
+}
+
+@Misc{webCrypto,
+  author = {{W3C Web Apps Working Group}},
+  title = {{Web Cryptography: W3C Working Draft}},
+  month = {March 14},
+  year = {2014},
+  note = {\url{http://www.w3.org/TR/WebCryptoAPI/}}
+}
+
+@Misc{pyCrypto,
+  author = {D. Litzenberger},
+  title = {PyCrypto: The Python Cryptography Toolkit},
+  month = {June 23},
+  year = {2014},
+  note = {\url{https://www.dlitz.net/software/pycrypto/}}
+}
+
+@Misc{json,
+  author={D. Crockford},
+  title={{The application/json Media Type for JavaScript Object Notation (JSON)}},
+  howpublished={{RFC 4627 (Draft Standard)}},
+  publisher={{IETF}},
+  year={{2006}},
+  month={{July}},
+}
+
+@InProceedings{cryptdb,
+  author = {Raluca Ada Popa and Catherine M.S. Redfield Nickolai Zeldovich and M. Frans Kaashoek and Hari Balakrishnan},
+  title = {{CryptDB: Protecting Confidentiality with Encrypted Query Processing}},
+  booktitle = {Proceedings of SOSP},
+  address = {Cascais, Portugal},
+  month = {October},
+  year = {2011},
+}
+
+@inproceedings{sundr,
+  title={SUNDR: Secure untrusted data repository},
+  author={Li, Jinyuan and Krohn, Maxwell and Mazieres, David and Shasha, Dennis},
+  booktitle={USENIX Symposium on Operating Systems Design and Implementation},
+  year={2004}
+}
+
+@inproceedings{bstore,
+  title={Separating web applications from user data storage with BSTORE},
+  author={Chandra, Ramesh and Gupta, Priya and Zeldovich, Nickolai},
+  booktitle={Proceedings of the 2010 USENIX conference on Web application development},
+  pages={1--1},
+  year={2010},
+  organization={USENIX Association}
+}
+
+@incollection{k2c,
+  title={K2C: Cryptographic cloud storage with lazy revocation and anonymous access},
+  author={Zarandioon, Saman and Yao, Danfeng Daphne and Ganapathy, Vinod},
+  booktitle={Security and Privacy in Communication Networks},
+  pages={59--76},
+  year={2012},
+  publisher={Springer}
+}
+
+@inproceedings{macaroons,
+  title={Macaroons: Cookies with contextual caveats for decentralized authorization in the cloud},
+  author={Birgisson, Arnar and Politz, Joe Gibbs and Erlingsson, Ulfar and Taly, Ankur and Vrable, Michael and Lentczner, Mark},
+  booktitle={21th Annual Network and Distributed System Security Symposium (NDSS)},
+  year={2014}
+}
+
+@incollection{abedb,
+  title={Towards Secure Cloud Database with Fine-Grained Access Control},
+  author={Solomon, Michael G and Sunderam, Vaidy and Xiong, Li},
+  booktitle={Data and Applications Security and Privacy XXVIII},
+  pages={324--338},
+  year={2014},
+  publisher={Springer}
+}
+
+@article{abe-medical,
+  title={Scalable and secure sharing of personal health records in cloud computing using attribute-based encryption},
+  author={Li, Ming and Yu, Shucheng and Zheng, Yao and Ren, Kui and Lou, Wenjing},
+  journal={Parallel and Distributed Systems, IEEE Transactions on},
+  volume={24},
+  number={1},
+  pages={131--143},
+  year={2013},
+  publisher={IEEE}
+}
+
+@incollection{kamara2010,
+  title={Cryptographic cloud storage},
+  author={Kamara, Seny and Lauter, Kristin},
+  booktitle={Financial Cryptography and Data Security},
+  pages={136--149},
+  year={2010},
+  publisher={Springer}
+}
+
+@article{w5,
+  title={A world wide web without walls},
+  author={Krohn, Maxwell and Yip, Alex and Brodsky, Micah and Morris, Robert and Walfish, Michael and others},
+  journal={Proceedings of HotNets-VI, Atlanta, GA},
+  year={2007}
+}
+
+@inproceedings{sporc,
+  title={SPORC: Group Collaboration using Untrusted Cloud Resources.},
+  author={Feldman, Ariel J and Zeller, William P and Freedman, Michael J and Felten, Edward W},
+  booktitle={OSDI},
+  volume={10},
+  pages={337--350},
+  year={2010}
+}
+  
+@InProceedings{mylar,
+  author = {Raluca Ada Popa and Emily Stark and Jonas Helfer and Steven Valdez and Nickolai Zeldovich and M. Frans Kaashoek and Hari Balakrishnan},
+  title = {{Building web applications on top of encrypted data using Mylar}},
+  booktitle = {Proceedings of NSDI},
+  address = {Seattle, WA},
+  month = {April},
+  year = {2014},
+}
+
+@inproceedings{bethencourt2007,
+  title={Ciphertext-policy attribute-based encryption},
+  author={Bethencourt, John and Sahai, Amit and Waters, Brent},
+  booktitle={Security and Privacy, 2007. SP'07. IEEE Symposium on},
+  pages={321--334},
+  year={2007},
+  organization={IEEE}
+}
+
+@article{xss,
+  title={Cross-site scripting},
+  author={Spett, Kevin},
+  journal={SPI Labs},
+  pages={1--20},
+  year={2005}
+}
+
+@article{socialEngineering,
+ author = {Applegate,Major, Scott D.},
+ title = {Social Engineering: Hacking the Wetware!},
+ journal = {Inf. Sec. J.: A Global Perspective},
+ issue_date = {January 2009},
+ volume = {18},
+ number = {1},
+ month = jan,
+ year = {2009},
+ issn = {1939-3555},
+ pages = {40--46},
+ numpages = {7},
+ url = {http://dx.doi.org/10.1080/19393550802623214},
+ doi = {10.1080/19393550802623214},
+ acmid = {1506581},
+ publisher = {Taylor \& Francis, Inc.},
+ address = {Bristol, PA, USA},
+ keywords = {operations security, physical (environmental) security, social engineering, telecommunications and network security},
+} 
+
+@inproceedings{kpabe,
+  title={Attribute-based encryption for fine-grained access control of encrypted data},
+  author={Goyal, Vipul and Pandey, Omkant and Sahai, Amit and Waters, Brent},
+  booktitle={Proceedings of the 13th ACM conference on Computer and communications security},
+  pages={89--98},
+  year={2006},
+  organization={Acm}
+}
+
+
+@article{depot,
+  title={Depot: Cloud storage with minimal trust},
+  author={Mahajan, Prince and Setty, Srinath and Lee, Sangmin and Clement, Allen and Alvisi, Lorenzo and Dahlin, Mike and Walfish, Michael},
+  journal={ACM Transactions on Computer Systems (TOCS)},
+  volume={29},
+  number={4},
+  pages={12},
+  year={2011},
+  publisher={ACM}
 }
