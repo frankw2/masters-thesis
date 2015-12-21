@@ -1,165 +1,131 @@
 \chapter{Evaluation}
 \label{sec:evaluation}
 
-In this section, we evaluate Sieve's performance
-and try to answer one main question: \textit{Is Sieve practical?}
+In this section, we explore a single
+high-level question: is Sieve practical?
+To answer this question, we integrate
+Sieve with Open mHealth~\cite{omh}, an
+open source web service that allows users
+to analyze their health data. We demonstrate
+that the integration is straightforward, and
+that the end-to-end application pipeline can
+handle realistic workloads. Using
+microbenchmarks, we also demonstrate that
+Sieve's optimizations for avoiding costly
+ABE operations (\S\ref{sec:minAbeCost})
+are crucial for making Sieve practical.
 
-All tests were run on a machine with a 2 GHz
-Intel Core i7 and 8 GB of RAM. 
-We ran each experiment 50 times, and we report
-the average (standard deviations were small).
-We configured Sieve to use 2048 bit RSA with
-SHA256 for signatures, 128-bit AES in CTR mode
-Ed448-Goldilocks elliptic curves in randomized
-counter mode for encryption, and ABE using 224-bit MNT curves. 
-All web servers ran on the test machine's loopback
-network, to minimize network latency and
-focus on Sieve's cryptographic overheads.
-
-\begin{figure*}[t!]
+\begin{figure*}
 \centering
-  \subfloat[ABE and Ed448 symmetric key encryption in randomized counter mode.]{\includegraphics[width=0.48\textwidth]{figs/throughput1.pdf}\label{fig:throughput_ec}}
-  \subfloat[ABE and AES symmetric key encryption in CTR mode.]{\includegraphics[width=0.48 \textwidth]{figs/throughput2.pdf}\label{fig:throughput_aes}}
-    \caption{Throughput of Sieve upload vs. percentage of data blocks
-requiring ABE encryption of metadata blocks for a given data upload size. For example,
-10 percent requiring ABE operations for 10 KB means that that 1 KB
-required the encryption of a metadata
-block in addition to symmetric key encryption and 9 KB 
-required only symmetric key encryption. We assume there
-are 10 attributes for ABE encryption.}
+  \subfloat[Encryption speed: ABE and Ed448 in randomized counter mode.]{\includegraphics[width=0.48\textwidth]{figs/throughput1.pdf}\label{fig:throughput_ec}}
+  \subfloat[Encryption speed: ABE and AES in CTR mode.]{\includegraphics[width=0.48\textwidth]{figs/throughput2.pdf}\label{fig:throughput_aes}}
+    \caption[ABE throughputs for Sieve]{Encryption throughputs for Sieve, as a function of 1) the size of
+             the data to symmetrically encrypt, 2) the percentage of symmetric
+             data encryptions which also require the ABE encryption of a
+             metadata block, and 3) whether the cipher is AES or
+             key homomorphic Ed448. All experiments assume that each metadata
+             block has five attributes, and each ABE key has 10. Performance
+             trends for decryption are similar.}
 \label{fig:throughput}
 \end{figure*}
 
-\section{Uploading and Downloading Data Objects}
-When an application uses Sieve, the core
-logic of the web service is
-unchanged. Thus, the main performance metric
-for Sieve is the expense of pushing user data
-to the storage provider and pulling user
-data into the web service. Ignoring networking
-costs, Sieve's overhead is the cryptographic
-cost of performing access control checks and
-revealing the cleartext data to the third
-party.
+All experiments ran on a machine with a 2 GHz
+Intel Core i7 and 8 GB of RAM. We ran each
+experiment 50 times, and we report the average
+(standard deviations were small).
+%{\bf !!!jwm: Can we say how small?}
+Sieve used 2048 bit RSA with SHA256 to sign
+user objects. To symmetrically encrypt those
+objects, Sieve used 128-bit AES in CTR mode,
+or Ed448-Goldilocks elliptic curves in randomized
+counter mode; the latter cipher is key
+homomorphic (\S\ref{sec:revocation}), but the
+former is not. ABE operations used 224-bit MNT
+curves~\cite{mnt224}. All web servers ran on the test
+machine's loopback interface, to minimize
+network latency and focus on Sieve's cryptographic
+overheads.
 
-In Sieve, the user encrypts her data with a symmetric
-key $K$, and uses ABE to encrypt the GUID and
-$K$. Assuming 64 bit GUIDs, the size of the GUID and AES key
-is 24 bytes, and the size of the GUID and Ed448 block cipher key is 64 bytes.~\footnote{
-The Ed448 block cipher is 56 bytes compared to AES, which is 16 bytes.
-The Ed448 block cipher operates on 56 bytes of cleartext at once
-compared to AES, which operates on 16 bytes of cleartext.}  
+All GUIDs were 64 bits long. Thus, a metadata
+block which contained a GUID and an AES key
+was 24 bytes in size, whereas a metadata block
+with a GUID and an Ed448 key was 64 bytes long.
 
-\subsection{Integrating Sieve with an Existing Health Application:} 
-We build Sieve on top of Open mHealth~\cite{omh}, which is an open-source
-health application that allows users to analyze and visualize their health data.
-We use Open mHealth's data generator to obtain realistic user data in a format
-that match current clinical standards. We use Sieve to upload this data to
-a storage provider and to download this data into the Open
-mHealth health visualizer.
+\section{Integrating Sieve with Open mHealth}
+\label{sec:integration}
+Open mHealth allows users to upload medical
+data to a web server that will analyze the
+data and provide explanatory visualizations.
+To integrate Sieve with Open mHealth, we first 
+forced the Open mHealth
+client to upload data via the Sieve client
+instead of directly to the Open mHealth server.
+We then ran a Sieve import daemon on the Open
+mHealth web server, configuring the daemon
+with the data schema that the Open mHealth
+analytics engine uses. These modifications
+required approximately 200 lines of code
+to be changed in the Open mHealth platform.
 
-Using Open mHealth, we generate a 
-week's worth of fitness and health data, which includes weight,
-blood pressure, physical activity, steps taken, and heart rate. 
-A day's worth of data has about 14 data points.
-The attributes we placed on the data include 
-the date, user id, provenance, and type of data.
-We imagine a user would 
-upload her data daily, and to reduce ABE overhead, the user would create a 
-storage-based data structure (\S\ref{sec:minAbeCost}) to store 
-a week's worth of a specific type of fitness data, e.g. heart rate. 
-The cost to upload a data point on the first day of the week, 
-i.e. create a storage-based data structure, is 1.1 s,
-using either AES or Ed448 as the symmetric encryption scheme
-because ABE represents a majority of the cost. For each subsequent
-daily update or update to a pre-existing data point, 
-it costs 38.5 ms per data point for Ed448
-encryption and 17.1 ms per data point for AES encryption. 
+To test the end-to-end performance of the
+application pipeline, we used Open mHealth's
+data generator to create a week's worth of
+health data. The data included information
+like weight, blood pressure, physical activity,
+and heart rate. Each day had approximately
+14 data points. For each data point, the
+Sieve client added attributes like the
+date that the sample was collected, the
+name of the associated user, and the type
+of data represented by the sample. The Sieve
+client used a single storage-based data 
+structure to store the samples for an entire week.
 
-Using Sieve, we download data from the storage provider into the Open mHealth
-fitness visualizer. The cost to download the whole data structure (metadata block,
-indirect GUIDs table, and data) containing a week's 
-worth of data is 0.95 s. To download any updates from the data structure takes 0.25 s
-using Ed448 as the symmetric encryption scheme and 0.04 s using AES. 
-We note that the user and web service can reduce overall cost by uploading
-and downloading data asynchronously or in batches.
+The cost to upload the first data point
+at the beginning of a week was 1.1 seconds;
+the cost was dominated by ABE encryption.
+Uploading subsequent data points proceeded
+at the throughput of the symmetric cipher,
+requiring 17.1 ms per data point for AES,
+and 38.5 ms for Ed448.
 
-\subsection{Microbenchmarks:}
-Open mHealth gives us a realistic application for Sieve, but
-the size of the data blocks varies depending on the web service.
-For example, GPS coordinates for running data tend to be around 10-100 bytes
-whereas medical images, such as X-rays, and documents tend to be bigger
-around (100KB - 1 MB).
-Figure~\ref{fig:throughput}
-shows that the throughput of Sieve's upload 
-protocol under workloads that vary in the percentage
-of ABE operations used and size of data being uploaded. For all the 
-experiments, we assume that the data blocks have 5 attributes.
-For example, for the 10 KB experiment, we synchronously 
-uploaded 10 blocks of data sized 1 KB each, and stating that 10 percent
-of the blocks require ABE operations means that 
-a single 1 KB block required an ABE operation.
-The trends are similar for downloading
-and decrypting data. 
+On the server-side, importing an entire
+week of data required 1.4 seconds for both AES 
+and Ed448 if the server had not cached GUIDs or symmetric
+keys; ABE decryption dominated the cost. 
+In that scenario, the server had to
+download the metadata block, decrypt it with
+ABE, download the raw data block, and then
+decrypt that block using a symmetric cipher. 
+If the server cached GUIDs and symmetric keys,
+accessing the entire week's data cost 0.08 seconds
+with AES, and 0.75 seconds with Ed448.
 
-Throughput degrades with an increase in the number of 
-ABE operations required because ABE is more computationally
-expensive compared to symmetric key encryption. This is especially
-true in Figure~\ref{fig:throughput_aes}. Although libfenc~\cite{libfenc}
-is an early-stage, unoptimized version of ABE, it will still be substantially
-slower than symmetric key encryption because it is a public cryptography scheme.
-Moreover, we expect updates to be frequent because a user might upload
-her financial transactions or running data daily. To increase throughput, a user could
-create a data container with an indirect GUID map as 
-described in Section~\ref{sec:minAbeCost} to
-reduce the percentage of uploads and downloads requiring ABE operations.
-If the user or web service caches data object GUIDs, they can
-submit a batched request for data objects or submit requests asynchronously
-and further increase throughput.
+\section{Microbenchmarks}
+\subsection{Encryption speed} Sieve requires
+clients to symmetrically encrypt each data
+object before uploading it. Some fraction of
+uploads will also require clients to ABE-encrypt
+a metadata block. Minimizing that fraction
+is important, because ABE operations are much
+slower than symmetric operations. Figure~\ref{fig:throughput}
+quantifies the performance gaps between ABE
+and symmetric ciphers. For 10 KB objects,
+pure ABE encryption throughput is 1.1 KB/s,
+whereas pure Ed448 throughput is 23.8 KB/s
+and pure AES throughput is 43.5 KB/s.
+Although clients can perform data uploads
+asynchronously, in the background, the
+computational costs for ABE are still quite
+high. Thus, the optimizations from
+Section~\ref{sec:minAbeCost} are crucial
+for minimizing the number of ABE operations.
 
-Another observation is that the symmetric key encryption using Ed448, which is
-needed for revocation(\S\ref{sec:revocation}) is slower
-than that of AES because it is an unoptimized elliptic curve library. It is likely
-that over time, the throughput of Ed448 will approach that of AES.
-
-\subsection{Finding the Relevant Metadata Blocks:} Another small detail not included above
-is the cost of the storage provider finding the relevant metadata blocks. 
-Recall that the attributes for the data objects
-and the access control structure (ACS) on a web service's decryption key
-are not encrypted. In order to conserve bandwidth, the storage provider
-only wants to send the web service metadata blocks that the web service's
-key allows it to decrypt. To do this, the storage provider indexes metadata blocks
-based on their attributes, and the web service provides the storage provider
-with the unencrypted ACS, which can be converted into a database query. 
-The storage provider then runs this query and returns
-the relevant blocks to the web service.
-To test the storage provider's overhead of find these metadata blocks, we uploaded
-1 million metadata blocks each with 10 randomly selected attributes from a group 
-of 35 attributes to a MongoDB database as described in Section~\ref{sec:implementation}.
-Then, we generated an ACS with 5 attributes with a mixture of \texttt{AND}s and 
-\texttt{OR}s and queried the database to find the relevant metadata
-blocks. We observe the time for this experiment was 1.1 ms, which represents
-minimal overhead.
-
-\section{Key Generation and Revocation}
-
-In addition to the costs for uploading and downloading data,
-a web service must retrieve an ABE key from the user's Sieve client before
-data retrieval starts and, in rare instances,
-key revocation might deem the ABE key invalid and require
-the web service to request a new ABE key. 
-The costs for generating a key are shown in Figure~\ref{fig:sievekey}.
-
-As described in Section~\ref{sec:revocation}, revoking full access
-to a web service requires re-encryption of both the metadata block
-and data block. Figure~\ref{fig:sievekey} shows the breakdown of 
-costs for these operations.
-The user needs to re-encrypt and upload the new metadata block, and
-the user sends the re-keying token to the storage provider for re-encryption
-of the data. However, since re-encrypting of the metadata and re-encrypting
-of the data are done by different parties. They can be easily be done in 
-parallel. 
-
+Note that Ed448~\cite{ed448} is a new elliptic curve.
+Implementations of symmetric ciphers using Ed448 
+are currently slower than popular AES libraries,
+but we expect Ed448's performance to improve as
+its implementations mature.
 
 \begin{figure}
 \centering
@@ -168,32 +134,60 @@ parallel.
 Operation & Time (s)\\ \hline
 Generating 10 attribute key &  0.46\\ \hline
 Generating 20 attribute key & 0.64\\ \hline
-Re-encrypting and uploading metadata block (10 attributes) & 0.63 \\ \hline
-Re-encrypting and uploading metadata block (20 attributes) & 0.91 \\ \hline
+Re-encrypting a metadata block (10 attributes) & 0.63 \\ \hline
+Re-encrypting a metadata block (20 attributes) & 0.91 \\ \hline
 Re-key 100 KB data block & 0.41 \\ \hline
 \end{tabular}
-\caption{Key Generation and Revocation in Sieve}
+\caption{Computational overheads for key generation and revocation.}
 \label{fig:sievekey}
 \end{figure}
 
-\section{Secret sharing}
+\subsection{Key generation and revocation}
+Figure~\ref{fig:sievekey} describes the costs
+that Sieve pays for generating new ABE keys,
+re-encrypting metadata blocks, and re-keying
+a 100 KB data block. The creation of new ABE
+keys is rare, and only occurs when a new service
+requests access permissions, or an old service
+receives modified permissions (possibly as the
+result of an epoch number increasing after a
+revocation (\S\ref{sec:revocation}). During
+revocation, the metadata blocks asssociated
+with the revoked ABE key must be re-encrypted;
+however, those metadata blocks will typically
+point to a much larger number of raw data
+blocks (\S\ref{sec:minAbeCost}), so the overall
+re-encryption cost of revocation is governed
+by the speed with which raw data can be re-keyed.
 
-When the user issues a new decryption key to an application,
-she uses the ABE master secret key, and when she
-uploads a new data object, she uses the signature private key. In Sieve,
-we partition these secrets such that the loss of one
-device does not lead to the compromise of the confidentiality
-and integrity of the whole system using $(k, n)$ Shamir secret sharing .
+\subsection{Attribute matching} When the storage
+provider receives a data access request from a
+third party, the storage provider must locate
+the metadata blocks whose attributes match those
+of the access request. Sieve makes the matching
+process fast by storing metadata blocks in a
+database and indexing those blocks using their
+attributes.
 
-The costs of secret sharing a 2048 bit object, which represents
-the typical size of an RSA signature private key 
-and an ABE master secret key assuming $k$ = 2 and $n$ = 5, meaning
-sharing the secret among 5 devices and requires 2 to 
-reconstruct it. are the following. It takes 0.04 ms to split a secret 
-into 5 shares, and 0.09 ms to reconstruct a secret using 2 shares. 
-Resetting the shares, 
-adding and removing devices, and changing $k$ or $n$ 
-requires both a secret reconstruction step and a share creation step
-as show in Section~\ref{sec:secretSharing}. However,
-the overhead of these computations are very small, but there might 
-latency costs associated with retrieving the shares.
+Due to space constraints, we omit a full description
+of matching performance. However, the results
+are unsurprising, since modern databases are good
+at building indices. For example, in one experiment,
+we injected 1 million metadata blocks into MongoDB;
+each metadata block had 10 randomly selected attributes
+from a universe of 35 possible attributes. Then, we
+submitted access queries in which each query contained
+5 random attributes joined with a random set of
+\texttt{ANDs} and \texttt{ORs}. Each query took 1.1 ms
+to complete.
+
+\subsection{Secret-sharing} Sieve partitions the
+ABE master key and the RSA signing key across
+multiple devices, ensuring that a lost or stolen
+device will not store a full copy of sensitive
+cryptographic information. The secret sharing
+protocol is cheap: ignoring network latencies,
+and assuming that $k=2$ and $n=5$,
+splitting a 2048 bit object like an RSA key
+requires 0.04 ms, and reconstructing that key
+requires 0.09 ms.
