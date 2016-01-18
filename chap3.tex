@@ -489,7 +489,7 @@ the same ABE key.
 Additional web services may require new ABE
 keys, depending on how the attributes in ABE
 keys overlap. For example, consider two web services:
-the first possesses $K_{(a_0\; OR\; a_1)\; AND\; epoch=0}$,
+the first possesses \allowbreak $K_{(a_0\; OR\; a_1)\; AND\; epoch=0}$,
 and the second has $K_{(a_1\; OR\; a_2)\; AND\; epoch=0}$.
 Both keys grant access to a metadata block
 with attributes $a_1\; AND\; epoch=0$. To revoke
@@ -551,7 +551,7 @@ To the best of our knowledge, Sieve is the
 first ABE system which supports full re-keying
 of \emph{both} data and metadata. Prior ABE systems either
 cannot revoke keys at all~\cite{privio}, or can
-only revoke access to metadata~\cite{persona,aauth};
+only revoke access to metadata~\cite{persona,aauth,catchet};
 in the latter case, data remains encrypted with
 revoked symmetric keys, leaving that data vulnerable
 to storage server compromise or negligence.
@@ -764,6 +764,18 @@ because the user can revoke the web service's
 access to her un-accessed data using Sieve's
 revocation protocol (\S\ref{sec:revocation})
 
+Each storage-based data structure defines a
+Python API for adding and removing objects,
+as well as traversing the entire structure.
+Sieve clients and web services cache the
+metadata blocks for storage-based data
+structures, and use the Python APIs to
+interact with those structures. Thus, Sieve
+clients and web services are insulated from
+the low-level details of GUID maps (although
+both parties can access raw storage if desired,
+and if Sieve's ABE policies allow such accesses).
+
 Sieve's revocation protocol
 is compatible with GUID maps, which are re-encrypted
 in place, just like any other data block. However,
@@ -794,6 +806,47 @@ for one ciphertext block, the attacker does
 not have an easier job of decrypting other
 ciphertext blocks with the same $k$.
 
+\section{Relabelling}
+\label{sec:relabel}
+
+In Sieve, a user may relabel an object. For
+example, a user can restrict access by adding
+an additional attribute to the object. A user
+can also remove attributes, or swap one
+attribute for another.
+
+To implement relabelling, a user's Sieve
+client performs three actions. First,
+the client replaces the old
+metadata block on the storage server with a new one 
+that contains a new symmetric key 
+and is ABE-encrypted using the new attributes.
+Second, the client uses homomorphic encryption to
+re-encrypt the object under the new symmetric key 
+on the storage server.
+Finally, the client updates storage-based
+references to the object, ensuring that the
+references adhere to the object's new access
+policy. The client can locate these references
+because the client knows the old attributes
+for the object, the new attributes for the
+object, and the attributes for all of the user's
+metadata blocks. Thus, the client can determine
+which references must be patched. For example,
+suppose that a user has two storage-based data
+structures $S_0$ and $S_1$; further suppose that,
+due to relabelling, an object must move from
+$S_0$ to $S_1$. By inspecting the object's old
+attributes, the client determines that the object
+was originally referenced by $S_0$. The client
+homomorphically re-encrypts the object using
+symmetric key $k'$, traverses $S_0$ to remove
+any references to the object, and then adds a
+$<GUID, k'>$ reference for the object to $S_1$.
+Sieve performs the traversals, removals, and
+additions using the APIs defined by the
+storage-based data structures.
+
 \section{Discussion}
 \label{sec:discussion}
 
@@ -809,40 +862,35 @@ are Turing complete, but they are prohibitively
 slow. For example, garbled circuits decrypt
 AES data at a rate that is four orders of
 magnitude slower than native AES decryption~\cite{justGarble}.
-%Functional encryption is even slower because
-%the garbled circuits protocol provides ``hints''
-%during decryption through its interactive protocol
-%that do not exist in functional encryption.
 Relative to functional encryption and garbled
 circuits, ABE is several orders of magnitude
 faster. We believe this trade-off is worthwhile.
 
 
-\subsection{Paying for storage} In Sieve,
-each user places her objects in private
-cloud storage. Someone must pay for that
-storage. One option is for ad networks to
-pay. Ad networks can be third parties in
-Sieve, and they can receive ABE keys to
-access user data. They are also able
-to cache delegated objects, collect
+\subsection{Paying for storage} 
+In Sieve,
+each user places her objects in private cloud
+storage. Someone must pay for that storage.
+One option is for ad networks to pay. In Sieve,
+ad networks can be third parties, and they can
+receive ABE keys to access user data. Using a
+micropayment system like FileTeller~\cite{fileteller},
+advertisers could pay for the right to collect
 longitudinal data about a user, and generate
 targeted advertisements based on that data.
-In these scenarios, ad networks are
-incentivized to use ad revenue to defer a
-user's storage costs---this encourages users
-to continue to declassify a subset of their
-data. Indeed, since each user now places all
-of her data in a single place instead of
-multiple locations, ad networks potentially
-gain access to more contextual information,
-even if users choose which objects to
-reveal~\cite{adnostic}. Thus, Sieve might
-enable a happy middle ground in which users gain
-explicit control over the data seen by third
-parties, and third parties willingly subsidize
-private user storage in return for better
-contextual information.
+By deferring user storage costs, advertisers
+would encourage users to continue to declassify
+a subset of their data. Indeed, since each user
+now stores all of her data in a single place
+instead of multiple locations, ad networks
+would gain access to more contextual information
+than in the web ecosystem, even if users choose
+which objects to reveal~\cite{adnostic}. Thus,
+Sieve might enable a happy middle ground in
+which users gain explicit control over the data
+seen by third parties, and third parties willingly
+subsidize private user storage in return for
+better contextual information.
 
 If ad-driven storage subsidies are poorly
 designed, they may lead to perverse trade-offs
@@ -866,8 +914,29 @@ expectation of direct payments from users.
 Thus, we believe that Sieve's application
 model is realistic.
 
-\subsection{Anonymity across services} Some
-users may not want to be tracked across
+\subsection{Efficient data importing} 
+In the
+current web ecosystem, users explicitly submit
+data to web services, making it easy for those
+services to determine when new information
+has been created. In Sieve, users submit new
+data to the storage provider. However, user
+devices know the tags that are associated
+with both new data items and web service ABE
+keys; thus, when a device uploads an object
+of interest to a particular service, the device
+can proactively notify the service of the upload.
+
+Storage-based data structures (\S\ref{sec:minAbeCost})
+also make it easy for services to identify new
+data. For example, using a storage-based log,
+user devices can append new data to the head of
+the log. A service can cache the GUID and the
+symmetric key for the log head, and periodically
+check the beginning of the log for new objects.
+
+\subsection{Anonymity across services} 
+Some users may not want to be tracked across
 different web services. For example, a user
 might be comfortable sharing data with services
 $X$ and $Y$, but uncomfortable with $X$ knowing
@@ -883,14 +952,13 @@ IP addresses from web services. However, users can also
 establish a unique login identity for each web
 service, or lobby web services to use anonymous
 credential systems~\cite{camenisch2001efficient}. 
-Unfortunately, Tor
-and anonymous credential systems rely on network
-proxies that hurt application responsiveness,
-and seemingly anonymized data sets can still
-reveal sensitive user information to machine
-learning algorithms~\cite{dwork2011differential}. Thus, providing
-anonymity on the web is still an important area
-for future research.
+Unfortunately, Tor and anonymous credential
+systems rely on network proxies that hurt
+application responsiveness, and seemingly
+anonymized data sets can still reveal sensitive
+user information to machine learning algorithms~\cite{dwork2011differential}.
+Thus, providing anonymity on the web is still
+an important area for future research.
 
 \section{Implementation}
 \label{sec:implementation}

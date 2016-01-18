@@ -29,22 +29,23 @@ are crucial for making Sieve practical.
 \label{fig:throughput}
 \end{figure*}
 
-All experiments ran on a machine with a 2 GHz
-Intel Core i7 and 8 GB of RAM. We ran each
+All experiments ran on a machine with 2.4 GHz 10-core
+Intel Xeon E7-8870 CPUs and 256 GB of RAM. We ran each
 experiment 50 times, and we report the average
 (standard deviations were small).
-%{\bf !!!jwm: Can we say how small?}
 Sieve used 2048 bit RSA with SHA256 to sign
-user objects. To symmetrically encrypt those
-objects, Sieve used 128-bit AES in CTR mode,
-or Ed448-Goldilocks elliptic curves in randomized
-counter mode; the latter cipher is key
-homomorphic (\S\ref{sec:revocation}), but the
-former is not. ABE operations used 224-bit MNT
-curves~\cite{mnt224}. All web servers ran on the test
-machine's loopback interface, to minimize
-network latency and focus on Sieve's cryptographic
-overheads.
+user objects. ABE operations used 224-bit MNT
+curves~\cite{mnt224}. To symmetrically encrypt
+those objects, Sieve used 128-bit AES in CTR
+mode, or Ed448-Goldilocks elliptic curves in
+randomized counter mode. The latter cipher is
+key homomorphic, but the former is not; by
+comparing Sieve's performance with these ciphers,
+we could measure the cost of supporting key
+revocation (\S\ref{sec:revocation}). All web
+servers ran on the test machine's loopback
+interface, to minimize network latency and
+focus on Sieve's cryptographic overheads.
 
 All GUIDs were 64 bits long. Thus, a metadata
 block which contained a GUID and an AES key
@@ -53,6 +54,11 @@ with a GUID and an Ed448 key was 64 bytes long.
 
 \section{Integrating Sieve with Open mHealth}
 \label{sec:integration}
+We present the results of our integrations
+with Open mHealth and Piwigo, and then discuss
+these results.
+
+\subsection{Open mHealth}
 Open mHealth allows users to upload medical
 data to a web server that will analyze the
 data and provide explanatory visualizations.
@@ -81,25 +87,103 @@ of data represented by the sample. The Sieve
 client used a single storage-based data 
 structure to store the samples for an entire week.
 
-The cost to upload the first data point
-at the beginning of a week was 1.1 seconds;
+The cost for the user to upload the first data point
+at the beginning of a week was 0.56 seconds;
 the cost was dominated by ABE encryption.
 Uploading subsequent data points proceeded
 at the throughput of the symmetric cipher,
 requiring 17.1 ms per data point for AES,
 and 38.5 ms for Ed448.
 
-On the server-side, importing an entire
-week of data required 1.4 seconds for both AES 
-and Ed448 if the server had not cached GUIDs or symmetric
+On the application-side, importing an entire
+week of data required 1.1 seconds for both AES 
+and Ed448 if the application had not cached GUIDs or symmetric
 keys; ABE decryption dominated the cost. 
 In that scenario, the server had to
 download the metadata block, decrypt it with
 ABE, download the raw data block, and then
 decrypt that block using a symmetric cipher. 
-If the server cached GUIDs and symmetric keys,
-accessing the entire week's data cost 0.08 seconds
+If the application cached GUIDs and symmetric keys,
+accessing the entire week's data cost 0.095 seconds
 with AES, and 0.75 seconds with Ed448.
+
+\subsection{Piwigo}
+Piwigo already allows users
+to import photos from their local storage and synchronize
+them with the web service. We created a module in
+Piwigo that allowed users to import photos from
+their Sieve storage provider, instead of local storage,
+using the Sieve import daemon. The main purpose of the
+module is to configure the Sieve import daemon
+with the data schema of Piwigo. This modification
+did not require changing any core parts of the Piwigo
+code, and the module required approximately 250 lines 
+of code.
+
+To test the end-to-end performance, we uploaded a 375 KB photo with three
+tags (location, date, and username). For the user, the cost of uploading 
+this photo took 0.57 seconds for AES and 6.1 seconds for Ed448.
+If the tags had been used previously, the uploading
+took 0.06 seconds for 4.2 seconds for Ed448.
+
+On the application side, to download a photo, 
+it took 0.44 seconds for AES and 
+6.3 seconds for Ed448. To download updates for a given
+set of tags assuming cached GUIDs and symmetric keys,
+it took 0.14 seconds for AES and 5.9 seconds.
+
+\subsection{Performance Discussion}
+One observation is that for AES, the uploading and downloading 
+costs are very similar between
+Open mHealth and Piwigo, despite one photo being
+much larger than a week's worth of user data in Open mHealth.
+The reason for this is that both data items have to pay a fixed
+ABE cost regardless of size. Since Sieve uses hybrid encryption,
+the difference in uploading and downloading 
+costs between photos and health data
+is the time Sieve takes to
+encrypt each data item using AES, which is much faster than an ABE operation.
+For this same reason, the difference in
+uploading and downloading cost between Ed448-encrypted photos and health data
+is much wider because Ed448 is a slower encryption scheme compared to AES. 
+However, Ed448 is an unoptimized library, and we do expect the cost of
+Ed448 encryption to approach that of AES.
+
+\subsection{Per-core throughput} To understand
+how a Sieve-integrated Open mHealth and Piwigo can scale
+with many users, we test the throughput of the
+storage daemon and application 
+import daemon, the two Sieve components 
+that need to handle large amounts of
+data. For both components, there is no communication
+between cores.
+
+For Open mHealth, the per-core throughput of the storage daemon,
+which stores data that a user uploads, is about 50 MB/s.
+This means that the storage daemon can process
+about 16,500 users uploading a week's worth in one second.
+For Piwigo, the per-core throughput of the storage daemon is
+about 200 MB/s, which means the storage daemon can store approximately
+550 photos in one second assuming each photo is 375 KB.
+We use a simple BerkeleyDB key-value store for Sieve, but
+the throughput can easily increase with a better performing
+key-value store.
+
+Using one core, Open mHealth can download
+a week's worth of data from Sieve storage for 
+about 420 users in one minute for AES-encrypted
+data, and about 70 users in one minute for Ed448-encrypted data. 
+For Piwigo, assuming 375 KB photos, 
+an application can download 235 AES-encrypted photos in one minute
+and 14 Ed448-encrypted photos in one minute. We conservatively
+assume that about 20 percent of the data downloaded requires downloading
+a metadata block, thus requiring an ABE operation. 
+As the speed of ABE and Ed448 libraries improve, we expect the throughput to 
+improve substantially. We also expect the download throughput 
+of the Ed448-encrypted data to approach that of the AES-encrypted data. 
+Finally, our code was written mostly in Python, the throughput
+will also increase if we rewrote our code in lower level
+languages, such as C++.
 
 \section{Microbenchmarks}
 \subsection{Encryption speed} Sieve requires
@@ -121,11 +205,23 @@ high. Thus, the optimizations from
 Section~\ref{sec:minAbeCost} are crucial
 for minimizing the number of ABE operations.
 
-Note that Ed448~\cite{ed448} is a new elliptic curve.
-Implementations of symmetric ciphers using Ed448 
-are currently slower than popular AES libraries,
-but we expect Ed448's performance to improve as
-its implementations mature.
+Another observation is that the throughput for
+larger objects is higher than the
+throughput for smaller objects because
+there is a fixed cost for an ABE operation regardless
+of the size of the object. Encrypting larger objects
+does not take that much longer than smaller
+objects because the ABE operations dominate 
+the encryption time.
+
+For 1 MB objects, the performance gap between
+AES and Ed448 grows--AES throughput is 12 MB/s,
+and Ed448 throughput is only 120 KB/s. However,
+Ed448 is a new elliptic curve, with immature
+implementations relative to AES. We expect
+Ed448's performance to improve as its
+implementations receive more optimization
+effort.
 
 \begin{figure}
 \centering
@@ -160,7 +256,8 @@ blocks (\S\ref{sec:minAbeCost}), so the overall
 re-encryption cost of revocation is governed
 by the speed with which raw data can be re-keyed.
 
-\subsection{Attribute matching} When the storage
+\subsection{Attribute matching} 
+When the storage
 provider receives a data access request from a
 third party, the storage provider must locate
 the metadata blocks whose attributes match those
@@ -169,8 +266,7 @@ process fast by storing metadata blocks in a
 database and indexing those blocks using their
 attributes.
 
-Due to space constraints, we omit a full description
-of matching performance. However, the results
+However, the results
 are unsurprising, since modern databases are good
 at building indices. For example, in one experiment,
 we injected 1 million metadata blocks into MongoDB;
@@ -178,7 +274,7 @@ each metadata block had 10 randomly selected attributes
 from a universe of 35 possible attributes. Then, we
 submitted access queries in which each query contained
 5 random attributes joined with a random set of
-\texttt{ANDs} and \texttt{ORs}. Each query took 1.1 ms
+\texttt{ANDs} and \texttt{ORs}. Each query took 0.13 ms
 to complete.
 
 \subsection{Secret-sharing} Sieve partitions the
