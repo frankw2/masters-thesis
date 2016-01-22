@@ -55,23 +55,23 @@ block which contained a GUID and an AES key
 was 24 bytes in size, whereas a metadata block
 with a GUID and an Ed448 key was 64 bytes long.
 
-\section{Integrating Sieve with Open mHealth and Piwigo}
+\section{Integrating Sieve}
 \label{sec:integration}
 We present the results of our integrations
 with Open mHealth and Piwigo, and then discuss
 these results.
 
-\subsection{Open mHealth}
-Open mHealth allows users to upload medical
-data to a web server that will analyze the
-data and provide explanatory visualizations.
-To integrate Sieve with Open mHealth, we first 
-forced the Open mHealth
-client to upload data via the Sieve client
-instead of directly to the Open mHealth server.
-We then ran a Sieve import daemon on the Open
-mHealth web server, configuring the daemon
-with the data schema that the Open mHealth
+\subsection{Open mHealth} 
+Open mHealth allows
+users to upload medical data to a web server
+that will analyze the data and provide
+explanatory visualizations. To integrate Sieve
+with Open mHealth, we first modified the Open
+mHealth client to upload data via the Sieve
+client instead of directly to the Open mHealth
+server. We then ran a Sieve import daemon on
+the Open mHealth web server, configuring the
+daemon with the data schema that the Open mHealth
 analytics engine uses. These modifications
 required approximately 200 lines of code
 to be changed in the Open mHealth platform.
@@ -98,17 +98,17 @@ at the throughput of the symmetric cipher,
 requiring 17.1 ms per data point for AES,
 and 38.5 ms for Ed448.
 
-On the application-side, importing an entire
-week of data required 1.1 seconds for both AES 
-and Ed448 if the application had not cached GUIDs or symmetric
-keys; ABE decryption dominated the cost. 
-In that scenario, the server had to
-download the metadata block, decrypt it with
-ABE, download the raw data block, and then
-decrypt that block using a symmetric cipher. 
-If the application cached GUIDs and symmetric keys,
-accessing the entire week's data cost 0.095 seconds
-with AES, and 0.75 seconds with Ed448.
+The mHealth server used the Sieve import daemon
+to download user data. If the mHealth server
+had no cached GUIDs or symmetric keys, then
+importing a week of data required 1.1 seconds.
+In this scenario, the server had to download
+the metadata block, decrypt it with ABE,
+download the raw data block, and then decrypt
+that block using a symmetric cipher. If the
+server possessed cached GUIDs and symmetric keys,
+then importing a week of data took only 0.095
+seconds with AES, and 0.75 seconds with Ed448.
 
 \subsection{Piwigo}
 Piwigo already allows users
@@ -133,7 +133,7 @@ On the application side, to download a photo,
 it took 0.44 seconds for AES and 
 6.3 seconds for Ed448. To download updates for a given
 set of tags assuming cached GUIDs and symmetric keys,
-it took 0.14 seconds for AES and 5.9 seconds.
+it took 0.14 seconds for AES and 5.9 seconds for Ed448.
 
 \subsection{Performance Discussion}
 One observation is that for AES, the uploading and downloading 
