@@ -1,6 +1,24 @@
 \chapter{System Design}
 \label{sec:design}
 
+This chapter will discuss the design
+details of Sieve. First,
+we will give an overview of the 
+major system components. Next, we
+will discuss the best usage models
+for Sieve. We will provide an overview
+of ABE and how to assign attributes to
+user data. Then, we will talk about
+how data is uploaded to the storage provider.
+We will discuss how to define 
+access policies and issue keys to web services.
+We will provide a key revocation scheme
+and talk about protecting against
+device loss. We, then, present a technique
+to minimize ABE overheads. Finally,
+we show how to change attributes on data 
+in the storage provider. 
+
 \section{System Components}
 As shown and described in Chapter~\ref{sec:intro}, 
 Sieve
@@ -143,7 +161,9 @@ that govern how the object is encrypted.
 The ABE public key used to encrypt the object is derived directly 
 from these attributes, which can be integers or strings. 
 Since ABE is a public-key
-encryption scheme, anyone can encrypt objects. Each
+encryption scheme, anyone can encrypt objects. 
+In Section~\ref{sec:relabel}, we discuss how to 
+change these labels after encryption. Each
 decryption key has an access control structure
 (ACS) which enumerates one or more attributes.
 An ACS can test an attribute for equality (e.g.,
@@ -187,7 +207,9 @@ Users can also manually tag objects. Sieve is
 agnostic to the manner in which attributes
 are created, although our implementation of
 the Sieve client provides a GUI which simplifies
-manual tag assignment.
+manual tag assignment. Users can also
+change the data's 
+attributes after encryption (\S\ref{sec:relabel}).
 
 Users and web services must agree on data schemas,
 so that web services can meaningfully aggregate
@@ -239,7 +261,7 @@ and width, and may also possess user-defined
 tags like ``Vacation'' or ``Family.''
 
 As applications evolve, RDF and FOAF schemas
-may change. Sieve is compatible with
+may change.Sieve is compatible with
 preexisting techniques for synchronizing
 schema changes across a distributed system~\cite{f1,maintaindataware, onthefly}.
 
@@ -404,16 +426,7 @@ honest at the time of rekeying, then even
 if it is compromised later, it will never
 leak data that is encrypted with revoked
 keys.
-%!!!jwm: That's almost true; there is some
-%        subtlety involving the synchronization
-%        protocol for the counters. If a device
-%        is late in hearing the latest counter
-%        increment, there will be a period of
-%        time during which it will upload data
-%        using the old counter value. So, we
-%        might need to tweak the phrasing of
-%        the last sentence in the paragraph
-%        above.
+
 Leveraging homomorphic encryption~\cite{gentry},
 the storage provider re-encrypts the data
 locally, using a rekeying token provided
@@ -563,7 +576,10 @@ partitions may delay the rate at which devices
 learn about the revocation, so when a device
 receives a revocation notice, it proactively
 rekeys any data and metadata that it mistakenly
-encrypted using the revoked key. Computationally
+encrypted using the revoked key. Each revocation
+notice will have the issue time to help devices
+figure out what data was uploaded with the old
+epoch number. Computationally
 weak devices like Fitbits can delegate rekeying
 work to more powerful devices like laptops.
 
@@ -689,8 +705,8 @@ perform two encryptions for every object
 upload: an ABE encryption for the metadata
 block, and a symmetric encryption for
 the data block. ABE is a public key
-cryptosystem, so ABE operations are an
-order of magnitutude slower than symmetric
+cryptosystem, so ABE operations are
+much slower than symmetric
 ones. Fortunately, Sieve clients can use
 several techniques to reduce the frequency
 of ABE operations.
@@ -843,7 +859,13 @@ In Sieve, a user may relabel an object. For
 example, a user can restrict access by adding
 an additional attribute to the object. A user
 can also remove attributes, or swap one
-attribute for another.
+attribute for another. Each web service's 
+ABE decryption key does not change unless 
+the relabelling results in an over-privileged 
+web service, the user has to perform 
+revocation and re-issue the web service's 
+key to ensure that it has the correct access
+policies.
 
 To implement relabelling, a user's Sieve
 client performs three actions. First,
