@@ -18,7 +18,33 @@ any other application that generates new value
 from sensitive user data.
 
 \section{Threat Model}
+Sieve protects against a curious cloud
+provider or external attacker from
+gaining access to user data stored
+on the cloud storage provider. We assume
+the attacker is \textit{passive}, meaning
+they can access the data but do not interfere
+in any Sieve protocols. 
 
+Sieve prevents the web service from trying
+to access more data than allowed by its
+access policies. Moreover, Sieve allows for full revocation
+of a web service's data access:
+after revocation, the web service cannot
+access any previously retrievable data
+even if the storage provider is compromised.
+
+The user is trusted, but Sieve assumes that
+the user might lose devices. Sieve
+provides a way to recover from device 
+losses, but Sieve does not protect against
+a subverted device that the user believes 
+is functioning properly, i.e. a device
+installed with a rootkit.
+
+Sieve does not protect against client-side
+attacks like social engineering~\cite{socialEngineering}
+or cross-site scripting~\cite{xss}.
 
 \section{Security Goals}
 The user has a financial agreement with
@@ -82,10 +108,7 @@ those parties from downloading old or new
 user data from the storage provider
 (\S\ref{sec:revocation}).
 
-Sieve does not protect against client-side
-attacks like social engineering~\cite{socialEngineering}
-or cross-site scripting~\cite{xss}.
-However, Sieve uses secret sharing to
+Sieve uses secret sharing to
 protect system-wide secrets like the ABE
 master key from the loss of a single device
 (\S\ref{sec:secretSharing}).
