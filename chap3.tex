@@ -31,13 +31,15 @@ protocol with two-factor authentication
 The \textbf{storage provider daemon}
 accepts encrypted data from Sieve clients.
 Each encrypted object is tagged with
-cleartext attributes. The storage provider
+cleartext attributes $a_0,\ldots,a_N$, where $a_i$
+is an attribute name and value, such as 
+``name=Joe". The storage provider
 builds an index of these attributes so
-that, when a web service requests objects
-with attributes $a_0,\ldots,a_N$, where $a_i$
-is an attribute name and value, such ``name=Joe" 
-the storage provider can efficiently locate
-those objects (\S\ref{sec:attrGen}).
+that, when a web service requests objects whose
+attributes satisfy a certain policy, i.e. the policy
+on their ABE decryption key,
+the storage provider can 
+efficiently locate those objects (\S\ref{sec:attrGen}).
 
 The \textbf{Sieve import daemon} is run
 by a third party web service. The import
@@ -58,6 +60,18 @@ new objects and update old ones. Third
 parties use their own storage for data
 that is derived from a user's Sieve
 objects.
+
+In Sieve, there are five types of keys.
+There is the user \textbf{ABE master key},
+which is used to derive \textbf{ABE decryption keys}. The 
+\textbf{ABE public key} is used to encrypt the metadata
+block(\S\ref{sec:dataPush}) under user-provided
+attributes. The ABE decryption keys, which are
+associated with a policy and given to web 
+services by the user, are used to decrypt
+metadata blocks. The actual data are signed
+with \textbf{per-user RSA keys} and encrypted
+with \textbf{symmetric keys}.
 
 \section{Usage Model}
 
@@ -120,9 +134,16 @@ would have no way to selectively expose
   \label{fig:abeExample}
 \end{figure}
 
-In attribute-based encryption~\cite{kpabe}, a
-cleartext object is associated with attributes
-that govern how the object is encrypted. Each
+Attribute-based encryption~\cite{kpabe} is a 
+public-key encryption scheme. Each
+user has a unique ABE master key, which is used to derive
+ABE decryption keys. 
+A cleartext object is associated with attributes
+that govern how the object is encrypted. 
+The ABE public key used to encrypt the object is derived directly 
+from these attributes, which can be integers or strings. 
+Since ABE is a public-key
+encryption scheme, anyone can encrypt objects. Each
 decryption key has an access control structure
 (ACS) which enumerates one or more attributes.
 An ACS can test an attribute for equality (e.g.,
@@ -132,11 +153,16 @@ also chain those simple tests using \texttt{ANDs},
 \texttt{ORs}, and \texttt{NOTs}. As shown in
 Figure~\ref{fig:abeExample}, a key can only decrypt
 an object if the key's ACS matches the object's
-attribute values.
+attribute values. Using this user-generated ACS, 
+the user derives these ABE decryption
+keys from the ABE master key. Finally,
+since ABE is a public-key encryption scheme,
+it is slower than symmetric key cryptography.
 
 We use the shorthand notation $K_{a_0,\ldots,a_N}$
 to refer to an ABE key whose ACS contains the
-attribute tests $a_0,\ldots,a_N$. All tests are
+attribute tests $a_0,\ldots,a_N$ where $a_i$ is 
+an attribute name and value. All tests are
 implictly joined via \texttt{ANDs} unless we
 explicitly note otherwise.
 
@@ -152,14 +178,14 @@ external source, like an email attachment.
 Sieve associates each object, regardless
 of its provenance, with a set of attributes.
 
-Some attributes can be automatically assigned
+Some attributes can be automatically generated
 by hardware, like the GPS coordinates for a
 running route. Other attributes can be
 extracted by software, using application-specific
 transducers or semantic file systems~\cite{sfs,contextsfs,graphsfs}.
 Users can also manually tag objects. Sieve is
 agnostic to the manner in which attributes
-are assigned, although our implementation of
+are created, although our implementation of
 the Sieve client provides a GUI which simplifies
 manual tag assignment.
 
@@ -185,10 +211,11 @@ of the FOAF record is to standardize the
 metadata that is associated with each user.
 Instead, Sieve uploads individual FOAF
 entries, encrypting each one with the associated
-ABE attribute (e.g., $<alice>_{K_{userName}}$,
-such that the user's name can only be
+ABE attribute (e.g., $<alice>_{K_{field=userName}}$,
+where ``alice" is the encrypted data and $K_{field=userName}$
+ means that the data can only be
 decrypted by web services whose ABE keys
-possess the $userName$ attribute).
+possess the access to the $userName$ field attribute).
 
 Sieve associates each data object with a
 type-specific RDF schema. For example, a
@@ -197,7 +224,7 @@ pre-tax income, her number of dependents,
 and so on. Similar to FOAF records, RDF
 records are only used to define a standard
 attribute set for each data type. Sieve uploads 
-individual encrypted RDF entries (e.g., $<2>_{K_{numDependents}}$)
+individual encrypted RDF entries
 to the storage provider.
 
 Some data objects like images are not
@@ -226,19 +253,22 @@ must encrypt the file such that decryption
 is only possible with the ABE key whose ACS
 match the attributes $a_0,\ldots,a_N$. The na{\"i}ve
 approach is to directly encrypt $F$ with
-$K_{a_0,\ldots,a_N}$. However, ABE is a form of
-public key cryptography, and it is significantly
+$K_{a_0,\ldots,a_N}$. Since ABE is significantly
 slower than symmetric key cryptography. Thus,
 Sieve uses a \textit{hybrid encryption} scheme,
 encrypting the file data with a symmetric key,
 and encrypting the symmetric key with ABE.
 
 The end-to-end upload protocol is the following.
-First, Sieve generates a symmetric AES key $k$,
+First, Sieve generates a symmetric key $k$,
 and uses that key to encrypt $F$. Sieve uploads
 the encrypted $<F>_k$ to the storage provider.
 The storage provider responds with a GUID for
-the file. Sieve then uploads a \emph{metadata
+the file. To reduce latency, a user can also
+request and cache available GUIDs before
+the Sieve protocol starts to avoid having to
+wait for a server response for each file upload. 
+Sieve then uploads a \emph{metadata
 block} for $F$. The metadata block is an encrypted
 pointer containing $<GUID, k>_{K_{a_0,\ldots,a_N}}$.
 Only principals which possess keys with ACSes that
@@ -397,13 +427,9 @@ In the rest of this section, we first describe
 how data is re-encrypted, and then explain how
 the metadata is re-encrypted.
 
-\subsection{Re-encrypting data} Up to this point, 
-we have assumed that Sieve 
-encrypts data using a standard
-symmetric cipher like AES 
-(\S\ref{sec:dataPush}). However, to enable storage
-providers to re-encrypt data in situ, Sieve
-must instead employ a key homomorphic pseudorandom
+\subsection{Re-encrypting data} 
+To enable storage providers to re-encrypt data in situ, 
+Sieve employs a key homomorphic pseudorandom
 function~\cite{keyhom, npr99}. We
 define that function $F$ as
   \begin{equation*}
@@ -413,7 +439,9 @@ where $H$ is a hash function and $k$ is the
 secret key associated with each object. $F$
 is additively key homomorphic, which means
 that, for two keys $k$ and $k'$,
-$F(k,x)*F(k',x) = F(k+k',x)$.
+$F(k,x) \cdot F(k',x) = F(k+k',x)$. It is important
+to note that all operations described in this section
+are done modulo $p$ where $p$ is a large prime.
 
 Using $F$, we define an encryption scheme whose
 security and performance are similar to those
