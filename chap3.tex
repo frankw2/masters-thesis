@@ -2,7 +2,8 @@
 \label{sec:design}
 
 \section{System Components}
-As shown in Figure~\ref{fig:sieve}, Sieve
+As shown and described in Chapter~\ref{sec:intro}, 
+Sieve
 consists of three components: a user client,
 a storage provider daemon, and an import
 daemon run by third party web
@@ -16,7 +17,7 @@ decryption key, and sends it to the
 appropriate web service. Before the user
 uploads an object to the storage provider,
 the Sieve client transparently signs the
-object with a per-user RSA key, and then
+object, and then
 encrypts the object and signature with the
 relevant ABE attributes (\S\ref{sec:attrGen}).
 To protect against lost or stolen devices,
@@ -33,8 +34,9 @@ Each encrypted object is tagged with
 cleartext attributes. The storage provider
 builds an index of these attributes so
 that, when a web service requests objects
-with attributes $a_0,\ldots,a_N$, the
-storage provider can efficiently locate
+with attributes $a_0,\ldots,a_N$, where $a_i$
+is an attribute name and value, such ``name=Joe" 
+the storage provider can efficiently locate
 those objects (\S\ref{sec:attrGen}).
 
 The \textbf{Sieve import daemon} is run

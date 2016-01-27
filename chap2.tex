@@ -1,4 +1,4 @@
-\chapter{Threat Model}
+\chapter{Threat Model and Security Goals}
 \label{sec:threatModel}
 
 We focus on three kinds of principals. A
@@ -9,13 +9,18 @@ user stores her (encrypted) data on a
 \textbf{cloud storage provider}. Each
 user has one storage provider, but
 potentially many third parties which
-need delegated access. Potential storage
-providers include Amazon EC2 and Microsoft
+need delegated access. We envision storage
+providers be operated by services 
+such as Amazon S3 and Microsoft
 Azure. Potential third party web services
 are FitBit, Lark, Misfit, Mint, and 
 any other application that generates new value
 from sensitive user data.
 
+\section{Threat Model}
+
+
+\section{Security Goals}
 The user has a financial agreement with
 the storage provider: the user pays for the provider 
 to keep her objects and to participate in the
@@ -26,7 +31,7 @@ the decryption keys to the provider.
 This protects the confidentiality of
 user data if the storage service is
 malicious or compromised. Using signatures,
-Sieve can also protect the data's
+Sieve protects the data's
 integrity. However, Sieve cannot
 guarantee the availability or freshness
 of the data that the storage provider
@@ -58,7 +63,7 @@ and companies, given the importance
 of low latencies in modern web services~\cite{wprof,bobtail}.
 
 With respect to third party web services,
-Sieve's goal is to only reveal user data
+Sieve's goal is to reveal user data only
 as permitted by the user's disclosure
 policies. After Sieve transmits information
 to a third party web server, Sieve cannot

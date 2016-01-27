@@ -5,6 +5,7 @@
 %% \files=
 %% prompt when you run the file main.tex through LaTeX.
 \chapter{Introduction}
+\label{sec:intro}
 
 In today's web, a single person often 
 uses multiple web services. 
@@ -263,7 +264,14 @@ to users while still permitting the rich
 server-side computation on user's sensitive data
 that many popular web
 applications require to provide increased value
-for the user.
+for the user. More specifically, Sieve works best
+with applications where data streams are bound to the user
+and services that primarily read from data stream rather than
+write to them. Applications, like Reddit~\cite{reddit}, that
+have data that has little standalone value but
+derives value primarily 
+from being part of a larger context,
+like a discussion forum, are less applicable to Sieve.
 
 To demonstrate its practicality, we integrated Sieve with
 two different types of applications, a health application, 
