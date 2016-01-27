@@ -443,22 +443,31 @@ the metadata is re-encrypted.
 \subsection{Re-encrypting data} 
 To enable storage providers to re-encrypt data in situ, 
 Sieve employs a key homomorphic pseudorandom
-function~\cite{keyhom, npr99}. We
-define that function $F$ as
+function~\cite{keyhom, npr99}. The intuition is that
+we use this pseudorandom function in place of the AES
+block cipher for counter mode encryption. With the properties
+of counter mode and a key homomorphic pseudorandom function,
+we can construct a key homomorphic encryption scheme
+that allows Sieve to re-key data without decrypting. 
+
+We define that function $F$ as
   \begin{equation*}
     F(k, x) = H(x)^k 
   \end{equation*}
 where $H$ is a hash function and $k$ is the
-secret key associated with each object. $F$
+secret key associated with each object $x$ is the 
+input into the function. $F$
 is additively key homomorphic, which means
 that, for two keys $k$ and $k'$,
-$F(k,x) \cdot F(k',x) = F(k+k',x)$. It is important
-to note that all operations described in this section
+$F(k,x) \cdot F(k',x) = F(k+k',x)$. 
+All operations described in this section
 are done modulo $p$ where $p$ is a large prime.
 
 Using $F$, we define an encryption scheme whose
-security and performance are similar to those
-of AES. Like AES-CTR, our new encryption scheme
+security is similar to those
+of AES. We discuss the security of this
+scheme more formally below. 
+Like AES-CTR, our new encryption scheme
 operates on blocks of data, and uses a random
 counter to convert a block cipher into a stream
 cipher. In our new scheme, the $j$th ciphertext
@@ -496,6 +505,40 @@ each ciphertext block $c_j$:
 In this manner, the storage provider re-encrypts
 objects without learning the encryption keys
 or the underlying cleartext.
+
+\paragraph{Security for key homomorphic encryption scheme:}
+We discuss some security goals and properties of the 
+key homomorphic encryption scheme described above.
+We want to preserve the semantic security of AES-CTR,
+a common symmetric key encryption scheme. We will
+show our key homomorphic encryption scheme is also
+semantically secure.
+
+First, Naor, Pinkas, and Reingold~\cite{npr99} showed that 
+$F_{NPR}(k,x) = H(x)^k$ (described above) 
+is a secure pseudorandom function (PRF)
+in the random oracle model~\cite{canetti2004random} if
+the Decision Diffie-Hellman assumption holds in $\mathbb{G}$.
+An additional feature of this PRF is that it is key
+homomorphic, but that additional property does not affect
+the security of the PRF.
+
+Now that we have a secure PRF. We define counter-mode 
+encryption as $c_j = m_j \cdot F(k, N+j)$ where $c_j$
+is the $j$th block of the ciphertext, $m_j$ is the
+$j$th block of the plaintext, $k$ is the symmetric key,
+and $N$ is a unique nonce. A survey by Rogaway~\cite{rogaway2011evaluation}
+has shown that this encryption scheme is semantically
+secure as long as $F$ is a secure PRF. Typically, the AES 
+block cipher is
+used as $F$ because AES is assumed to be a secure PRF. 
+In our encryption scheme, we use $F_{NPR}$ as our PRF,
+which is key homomorphic.
+
+Therefore, our encryption scheme is semantically secure
+in the random oracle model if the Decision Diffie-Hellman
+assumption holds.
+
 
 \subsection{Re-encrypting metadata} Each user
 device maintains an integer counter called the
@@ -554,13 +597,6 @@ of the ABE key. The signature is unaffected
 because the signature is on the cleartext data, which
 remains unmodified.
 
-% !!!jwm: Note to self: This detail should go somewhere
-%         else; it doesn't directly deal with revocation.
-% Another small detail is that the user only
-% stores the attributes it has assigned to web
-% services to figure out what keys to reissue
-% but not the corresponding ABE decryption key
-% as a way to keep minimal sensitive information.
 
 \subsection{Additional details} A Sieve user
 will often possess multiple devices; for example,
@@ -834,11 +870,6 @@ protocol does not change the GUIDs that are
 associated with re-keyed data blocks, so embedded
 GUIDs inside data blocks remain valid after
 re-keying.
-% A user can also use the revocation protocol
-% to revoke access for any lost or stolen device
-% with cached keys and GUIDs similarly to the way
-% that users revoke access for web services
-% with cached GUIDs and keys.
 
 Each data block that is referenced by
 a particular GUID map is encrypted with the
