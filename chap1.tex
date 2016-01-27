@@ -17,9 +17,17 @@ portion of the user's objects in a walled
 garden which neither the user nor external
 services can directly access.
 
-These service-controlled data silos force
-users to relinquish low-level authority over
-data storage. As a result, users cede the
+Although currently, the user can use access control
+lists or adjust her privacy settings to 
+restrict data sharing 
+for different web services, there are
+several problems. First, the user has to trust
+the cloud provider will honor these settings.
+Moreover, different providers might have 
+different ways to set privacy policies,
+and these policies might not be sufficiently
+expressive. With these service-controlled data silos, 
+users cede the
 ultimate power to set access controls and
 limit how their data is shared. Furthermore, simple
 operations like enumerating all of a user's
@@ -62,7 +70,7 @@ logically centralized cloud store; the user
 would selectively disclose portions of that
 data to individual third party applications.
 Systems like Amber~\cite{amber} and BStore~\cite{bstore}
-have demonstrated the benefits of 
+explored the potential benefits of 
 decoupling applications and user
 data, but a centralized data storage
 increases the damage that results from a
@@ -171,8 +179,9 @@ the workflow in Figure~\ref{fig:sieve}:\\
   associated with attributes, which are key-value 
   pairs like ``date=2012", and decryption keys are 
   associated with policies; a key can only
-  decrypt ciphertexts whose attributes satisfy a key's
-  policy. Before the user uploads
+  decrypt whose attributes satisfy a key's
+  policy. The policies and attributes are both
+  stored in plaintext. Before the user uploads
   objects to the storage provider, she (or her local
   device) tags the objects with attributes like the
   date, the user's current location, or the object type
@@ -260,3 +269,7 @@ to manage the user data (\S\ref{sec:integration}). Piwigo
 is an open-source photo application that allows users to store
 and manipulate their photos similar to Flickr~\cite{flickr}. 
 Like Open mHealth, we used Sieve to manage the photos in Piwigo.
+Integrating Sieve into the Open mHealth and Piwigo 
+was straightforward and required approximately 200 and 250 lines of code
+respectively. The experimental results show these integrated systems
+can handle realistic workloads.
